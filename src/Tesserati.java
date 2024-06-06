@@ -2,7 +2,7 @@
 
 import java.io.Serializable;
 
-public class Tesserati implements Serializable {
+public class Tesserati implements Serializable ,Comparable<Tesserati>{
     private final String nomeTesserato;
     private final String cognomeTesserato;
     private final String codiceTesserato;
@@ -29,6 +29,10 @@ public class Tesserati implements Serializable {
 
     public String toString() {
         return "Nome: " + nomeTesserato + " " + cognomeTesserato + ", Codice: " + codiceTesserato;
+    }
+
+    public int compareTo(Tesserati t) {
+        return this.cognomeTesserato.compareTo(t.cognomeTesserato);
     }
 
 }

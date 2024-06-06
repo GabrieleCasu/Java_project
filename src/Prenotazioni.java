@@ -1,57 +1,49 @@
 //created by Gabriele Casu
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
 import java.util.List;
 
 public class Prenotazioni implements Serializable/*, Iterable<Tesserati>*/ {
-    //private final String giorno;
-    private final String orario;
-    //private final double prezzo;
-    //private final String campo;
-    //private final String stato;
-    //private final List<Tesserati> codici;
+    private final Date data;
+    private final int inizio;
+    private final double prezzo;
+    private final Campi_da_gioco campo;
+    private final List<String> tesserati;
 
-    /*public String getGiorno() {
-        return giorno;
-    }*/
-
-    public String getOrario() {
-        return orario;
+    public Date getData() {
+        return data;
     }
 
-   /* public double getPrezzo() {
+    public int getInizio() {
+        return inizio;
+    }
+
+    public double getPrezzo() {
         return prezzo;
     }
 
-    public String getCampo() {
+    public Campi_da_gioco getCampo() {
         return campo;
     }
 
-    public String getStato() {
-        return stato;
+    public List<String> getTesserati() {
+        return tesserati;
     }
 
-    public List<Tesserati> getCodici() {
-        return codici;
-    }*/
+    public Prenotazioni(Date data,int inizio, double prezzo, Campi_da_gioco campo, List<String> tesserati ) {
+        this.data = data;
+        this.inizio = inizio;
+        this.prezzo = prezzo;
+        this.campo = campo;
+        this.tesserati = tesserati;
 
-    public Prenotazioni(/*String giorno,*/ String orario/*, double prezzo, String campo, String stato*/) {
-        //this.giorno = giorno;
-        this.orario = orario;
-        //this.prezzo = prezzo;
-        //this.campo = campo;
-        //this.stato = stato;
-        //this.codici = new ArrayList<>();
     }
-
-    /*public Iterator<Tesserati> iterator() {
-        return codici.iterator();
-    }*/
 
     public String toString() {
-        return orario;
+        return "Prenotazione per il giorno: "+data+" dalle ore "+inizio+":00 alle ore "+(inizio+1)+":00\nCampo: "+campo+"\nPrezzo: "+prezzo+"\nTesserati: "+tesserati+"\n";
     }
 
 

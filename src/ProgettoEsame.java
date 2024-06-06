@@ -1,16 +1,29 @@
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Scanner;
 
 public class ProgettoEsame {
     static String nomeFileTesserati = "C:\\Users\\lekse\\IdeaProjects\\ProgettoPerEsame\\Tesserati";
     static String campiDisponibili = "C:\\Users\\lekse\\IdeaProjects\\ProgettoPerEsame\\Campi_da_gioco";
     static String orariDisponibili = "C:\\Users\\lekse\\IdeaProjects\\ProgettoPerEsame\\Orari_Prenotazioni";
+    static String filePrenotazioni = "C:\\Users\\lekse\\IdeaProjects\\ProgettoPerEsame\\src\\Prenotazioni";
     static ArrayList<Tesserati> tesserati;
     static ArrayList<Campi_da_gioco> campi;
     static ArrayList<Prenotazioni> prenotazioni;
+    static ArrayList<String> orari;
+
+    public static void salvaPrenotazioni(ArrayList<Prenotazioni> prenotazioni,String filename) throws IOException {
+        FileOutputStream fos = new FileOutputStream(filename);
+        ObjectOutputStream oos = new ObjectOutputStream(fos);
+        oos.writeObject(prenotazioni);
+        oos.close();
+        fos.close();
+    }
 
     public static ArrayList<Tesserati> elencoTesserati(String filename) throws IOException {
         ArrayList<Tesserati> tesserati = new ArrayList<>();
@@ -34,31 +47,53 @@ public class ProgettoEsame {
         String line;
         while ((line=br.readLine())!=null){
             String[] f = line.split(" ");
-            campi.add(new Campi_da_gioco(f[0]));
+            campi.add(new Campi_da_gioco(f[0],f[1]));
         }
         br.close();
         fr.close();
         return campi;
     }
 
+    public static ArrayList<String> elencoOrari(String filename) throws IOException {
+        ArrayList<String> orari = new ArrayList<>();
+        FileReader fr = new FileReader(filename);
+        BufferedReader br = new BufferedReader(fr);
+        String line;
+        while ((line=br.readLine())!=null){
+            orari.add(line);
+        }
+        br.close();
+        fr.close();
+        return orari;
+    }
+    /*
     public static ArrayList<Prenotazioni> elencoPrenotazioni(String filename) throws IOException {
         ArrayList<Prenotazioni> prenotazioni = new ArrayList<>();
         FileReader fr = new FileReader(filename);
         BufferedReader br = new BufferedReader(fr);
         String line;
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
         while ((line=br.readLine())!=null){
             String[] f = line.split(" ");
-            prenotazioni.add(new Prenotazioni(f[0]));
+            String[] tesseratiString = line.substring(11).split(", ");
+            List<String> tesserati = new ArrayList<>();
+            double prezzo = Double.parseDouble(line.substring(8));
+            for (String t : tesseratiString) {
+                tesserati.add(t);
+            }
+            prenotazioni.add(new Prenotazioni(f[0],prezzo,f[2],f[3],tesserati));
         }
         br.close();
         fr.close();
         return prenotazioni;
-    }
+    }*/
 
     public static void main(String[] args) throws IOException {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        DateTimeFormatter formatter2 = DateTimeFormatter.ofPattern("HH:mm");
         ArrayList<Tesserati> tesserati = elencoTesserati(nomeFileTesserati);
         ArrayList<Campi_da_gioco> campi = elencoCampi(campiDisponibili);
-        ArrayList<Prenotazioni> prenotazioni = elencoPrenotazioni(orariDisponibili);
+        ArrayList<String> orari = elencoOrari(orariDisponibili);
         System.out.println("Elenco tesserati: ");
         for (Tesserati t : tesserati) {
             System.out.println(t);
@@ -68,8 +103,32 @@ public class ProgettoEsame {
             System.out.println(t);
         }
         System.out.println("Elenco orari disponibili: ");
-        for (Prenotazioni t : prenotazioni) {
+        for (String t : orari) {
             System.out.println(t);
+        }
+
+        Scanner scanner = new Scanner(System.in);
+        int n;
+        while(true){
+            System.out.println("Benvenuto al campo sportivo CUS SASSARI! Selezionare un numero corrispondente alla propria richiesta.");
+            System.out.println("1-Effettua una prenotazione");
+            System.out.println("2-Cancella una prenotazione");
+            System.out.println("3-Verifica la disponibilita' di un campo");
+            n=scanner.nextInt();
+            switch(n){
+                case 1:
+                    System.out.println("In quale giorno si vorrebbe prenotare il campo?(inserire una data nel formato dd--MM--yyyy)");
+                    String data = scanner.nextLine();
+                    LocalDate userDate = LocalDate.parse(data,formatter);
+                    System.out.println("Data inserita: "+userDate+". Inserire ora l'orario desiderato: ");
+                    String orario = scanner.nextLine();
+                    LocalTime userTime = LocalTime.parse(orario,formatter2);
+                    LocalDateTime userDateTime = LocalDateTime.of(userDate,userTime);
+                    System.out.println("Data e ora inserite: "+userDateTime);
+
+
+
+            }
         }
         }
     }
