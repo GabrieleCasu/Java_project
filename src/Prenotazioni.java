@@ -7,11 +7,18 @@ import java.util.Date;
 import java.util.List;
 
 public class Prenotazioni implements Serializable/*, Iterable<Tesserati>*/ {
+    private static int contaID = 1;
+
+    private final int id;
     private final Date data;
     private final int inizio;
     private final double prezzo;
     private final Campi_da_gioco campo;
     private final List<String> tesserati;
+
+    public int getId() {
+        return id;
+    }
 
     public Date getData() {
         return data;
@@ -34,6 +41,7 @@ public class Prenotazioni implements Serializable/*, Iterable<Tesserati>*/ {
     }
 
     public Prenotazioni(Date data,int inizio, double prezzo, Campi_da_gioco campo, List<String> tesserati ) {
+        this.id = contaID++;
         this.data = data;
         this.inizio = inizio;
         this.prezzo = prezzo;
@@ -49,7 +57,7 @@ public class Prenotazioni implements Serializable/*, Iterable<Tesserati>*/ {
         String dataFormat = date.format(dtf);
         String inizioFormat = String.format("%02d:00",inizio);
         String fineFormat = String.format("%02d:00",inizio+1);
-        return "Prenotazione per il giorno: "+dataFormat+" dalle ore "+inizioFormat+":00 alle ore "+(fineFormat)+":00\nCampo: "+campo+"\nPrezzo: "+prezzo+"\nTesserati: "+tesserati+"\n";
+        return "ID: "+id+"\nPrenotazione per il giorno: "+dataFormat+" dalle ore "+inizioFormat+":00 alle ore "+(fineFormat)+":00\nCampo: "+campo+"\nPrezzo: "+prezzo+"$\nTesserati: "+tesserati+"\n";
     }
 
 

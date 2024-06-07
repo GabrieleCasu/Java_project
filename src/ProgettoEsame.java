@@ -111,7 +111,7 @@ public class ProgettoEsame {
         return prenotazioni;
     }*/
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, ClassNotFoundException {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         DateTimeFormatter formatter2 = DateTimeFormatter.ofPattern("HH:mm");
         ArrayList<Tesserati> tesserati = elencoTesserati(nomeFileTesserati);
@@ -143,6 +143,11 @@ public class ProgettoEsame {
             System.out.println("1-Effettua una prenotazione");
             System.out.println("2-Cancella una prenotazione");
             System.out.println("3-Verifica la disponibilita' di un campo");
+            System.out.println("4-Diventa un tesserato");
+            System.out.println("5-Modifica una prenotazione");
+            System.out.println("6-Visualizza la tua prenotazione");
+
+
             n=scanner.nextInt();
             switch(n){
                 case 1:
@@ -182,6 +187,26 @@ public class ProgettoEsame {
                     salvaPrenotazioni(prenotazioni,filePrenotazioni);
                     break;
 
+                case 2:
+                    System.out.println("Inserire l'ID della prenotazione da cancellare: ");
+                    int id = scanner.nextInt();
+                    Prenotazioni daRimuovere = null;
+                    for (Prenotazioni p : prenotazioni) {
+                        if(p.getId()==id){
+                            daRimuovere = p;
+                            break;
+                        }
+                    }
+                    if(daRimuovere==null){
+                        System.out.println("Prenotazione inesistente.");
+                    }
+                    else{
+                        prenotazioni.remove(daRimuovere);
+                        salvaPrenotazioni(prenotazioni,filePrenotazioni);
+                        System.out.println("Prenotazione cancellata.");
+                    }
+                    break;
+
 
 
 
@@ -196,6 +221,7 @@ public class ProgettoEsame {
 
                 default:
                     System.out.println("Termina il programma.");
+                    RipristinaPrenotazioni(filePrenotazioni);
                     exit(-1);
                     break;
 
