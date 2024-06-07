@@ -89,6 +89,17 @@ public class ProgettoEsame {
         }
         return null;
     }
+
+    public static String generaCodiceTesserato(String nome,String cognome,ArrayList<Tesserati> tesserati) {
+        String iniziali = (nome.substring(0, 1) + cognome.substring(0,1)).toUpperCase();
+        int nuovo = 1;
+        if(!tesserati.isEmpty()){
+            String last = tesserati.get(tesserati.size()-1).getCodiceTesserato();
+            int num = Integer.parseInt(last.substring(2));
+            nuovo = num + 1;
+        }
+        return String.format("%s%03d",iniziali,nuovo);
+    }
     /*
     public static ArrayList<Prenotazioni> elencoPrenotazioni(String filename) throws IOException {
         ArrayList<Prenotazioni> prenotazioni = new ArrayList<>();
@@ -204,6 +215,36 @@ public class ProgettoEsame {
                         prenotazioni.remove(daRimuovere);
                         salvaPrenotazioni(prenotazioni,filePrenotazioni);
                         System.out.println("Prenotazione cancellata.");
+                    }
+                    break;
+
+                case 4:
+                    System.out.println("Inserisci il tuo nome: ");
+                    String nome = scanner.next();
+                    System.out.println("Inserisci il tuo cognome: ");
+                    String cognome = scanner.next();
+                    System.out.println("Congratulazione sei diventato un tesserato! Il tuo codice da tesserato e': ");
+                    String codiceTesserato = generaCodiceTesserato(nome,cognome,tesserati);
+                    System.out.println(codiceTesserato);
+                    tesserati.add(new Tesserati(nome,cognome,codiceTesserato));
+                    System.out.println("Elenco tesserati: ");
+                    for (Tesserati t : tesserati) {
+                        System.out.println(t);
+                    }
+                    break;
+
+                case 6:
+                    System.out.println("Inserire l'ID della propria prenotazione per poterla visualizzare: ");
+                    int ID = scanner.nextInt();
+                    boolean presente = false;
+                    for (Prenotazioni p : prenotazioni) {
+                        if(p.getId()==ID){
+                            presente = true;
+                            System.out.println(p);
+                        }
+                    }
+                    if(!presente){
+                        System.out.println("La prenotazione richiesta non e' presente.");
                     }
                     break;
 
