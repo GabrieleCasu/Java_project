@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+import static java.lang.System.exit;
+
 public class ProgettoEsame {
     static String nomeFileTesserati = "C:\\Users\\lekse\\IdeaProjects\\ProgettoPerEsame\\Tesserati";
     static String campiDisponibili = "C:\\Users\\lekse\\IdeaProjects\\ProgettoPerEsame\\Campi_da_gioco";
@@ -23,6 +25,13 @@ public class ProgettoEsame {
         oos.writeObject(prenotazioni);
         oos.close();
         fos.close();
+    }
+
+    public static void RipristinaPrenotazioni(String filename) throws IOException, ClassNotFoundException {
+        ObjectInputStream ois = new ObjectInputStream(new FileInputStream(filename));
+        prenotazioni = (ArrayList<Prenotazioni>) ois.readObject();
+        System.out.println("File delle prenotazioni ripristinato.");
+        ois.close();
     }
 
     public static ArrayList<Tesserati> elencoTesserati(String filename) throws IOException {
@@ -66,6 +75,20 @@ public class ProgettoEsame {
         fr.close();
         return orari;
     }
+
+    public static Tesserati getTesserati(String codice, ArrayList<Tesserati> tesserati) {
+        for (Tesserati t : tesserati) {
+            if(t.getCodiceTesserato().equals(codice)) return t;
+        }
+        return null;
+    }
+
+    public static Campi_da_gioco getCampi(String codice, ArrayList<Campi_da_gioco> campi) {
+        for (Campi_da_gioco t : campi) {
+            if(t.getCodiceCampo().equals(codice)) return t;
+        }
+        return null;
+    }
     /*
     public static ArrayList<Prenotazioni> elencoPrenotazioni(String filename) throws IOException {
         ArrayList<Prenotazioni> prenotazioni = new ArrayList<>();
@@ -94,6 +117,12 @@ public class ProgettoEsame {
         ArrayList<Tesserati> tesserati = elencoTesserati(nomeFileTesserati);
         ArrayList<Campi_da_gioco> campi = elencoCampi(campiDisponibili);
         ArrayList<String> orari = elencoOrari(orariDisponibili);
+
+        try{
+            RipristinaPrenotazioni(filePrenotazioni);
+        }catch (IOException | ClassNotFoundException e) {
+            prenotazioni = new ArrayList<>();
+        }
         System.out.println("Elenco tesserati: ");
         for (Tesserati t : tesserati) {
             System.out.println(t);
@@ -117,14 +146,58 @@ public class ProgettoEsame {
             n=scanner.nextInt();
             switch(n){
                 case 1:
-                    System.out.println("In quale giorno si vorrebbe prenotare il campo?(inserire una data nel formato dd--MM--yyyy)");
-                    String data = scanner.nextLine();
+                    System.out.println("In quale giorno si vorrebbe prenotare il campo?(inserire una data nel formato dd/MM/yyyy)");
+                    String data = scanner.next();
                     LocalDate userDate = LocalDate.parse(data,formatter);
-                    System.out.println("Data inserita: "+userDate+". Inserire ora l'orario desiderato: ");
-                    String orario = scanner.nextLine();
+                    System.out.println("Data inserita: "+userDate+". Inserire ora l'orario desiderato(formato HH:mm): ");
+                    String orario = scanner.next();
                     LocalTime userTime = LocalTime.parse(orario,formatter2);
                     LocalDateTime userDateTime = LocalDateTime.of(userDate,userTime);
                     System.out.println("Data e ora inserite: "+userDateTime);
+                    System.out.println("Inserire il codice del campo:  ");
+                    String codice = scanner.next();
+                    Campi_da_gioco campo = getCampi(codice, campi);
+                    if(campo==null){
+                        System.out.println("Codice campo inesistente.");
+                        break;
+                    }
+                    System.out.println("Inserire il numero di tesserati(il prezzo è di 10$ a persona): ");
+                    int tesseratiNumero = scanner.nextInt();
+                    double prezzo = 10;
+                    List<String> tesseratiLista = new ArrayList<>();
+                    for (int i = 0; i < tesseratiNumero; i++) {
+                        System.out.println("Inserire il codice del tesserato: ");
+                        String codiceTesserato = scanner.next();
+                        Tesserati tesserato = getTesserati(codiceTesserato, tesserati);
+                        if(tesserato==null){
+                            System.out.println("Codice tesserato inesistente.");
+                        }
+                        else tesseratiLista.add(codiceTesserato);
+                    }
+                    prezzo = prezzo*tesseratiNumero;
+                    Prenotazioni prenotazione = new Prenotazioni(java.sql.Timestamp.valueOf(userDateTime),userTime.getHour(),prezzo,campo,tesseratiLista);
+                    prenotazioni.add(prenotazione);
+                    System.out.println("Prenotazione effettuata con successo! Di seguito avrete la stampa della prenotazione," +
+                            " se per qualsiasi ragione volete cancellare o modificare la prenotazione avvisateci per tempo.\n"+prenotazione);
+                    salvaPrenotazioni(prenotazioni,filePrenotazioni);
+                    break;
+
+
+
+
+
+
+
+
+
+
+
+
+
+                default:
+                    System.out.println("Termina il programma.");
+                    exit(-1);
+                    break;
 
 
 

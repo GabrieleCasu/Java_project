@@ -1,6 +1,8 @@
 //created by Gabriele Casu
 
-public class Campi_da_gioco {
+import java.io.Serializable;
+
+public class Campi_da_gioco implements Serializable {
     private final String codiceCampo;
     private final String tipologiaCampo;
 

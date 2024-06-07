@@ -43,7 +43,13 @@ public class Prenotazioni implements Serializable/*, Iterable<Tesserati>*/ {
     }
 
     public String toString() {
-        return "Prenotazione per il giorno: "+data+" dalle ore "+inizio+":00 alle ore "+(inizio+1)+":00\nCampo: "+campo+"\nPrezzo: "+prezzo+"\nTesserati: "+tesserati+"\n";
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        DateTimeFormatter dtf2 = DateTimeFormatter.ofPattern("HH:mm");
+        LocalDateTime date = new java.sql.Timestamp((data.getTime())).toLocalDateTime();
+        String dataFormat = date.format(dtf);
+        String inizioFormat = String.format("%02d:00",inizio);
+        String fineFormat = String.format("%02d:00",inizio+1);
+        return "Prenotazione per il giorno: "+dataFormat+" dalle ore "+inizioFormat+":00 alle ore "+(fineFormat)+":00\nCampo: "+campo+"\nPrezzo: "+prezzo+"\nTesserati: "+tesserati+"\n";
     }
 
 
