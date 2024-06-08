@@ -28,10 +28,8 @@ public class ProgettoEsame {
     }
 
     public static void RipristinaPrenotazioni(String filename) throws IOException, ClassNotFoundException {
-        ObjectInputStream ois = new ObjectInputStream(new FileInputStream(filename));
-        prenotazioni = (ArrayList<Prenotazioni>) ois.readObject();
+        new FileOutputStream(filename).close();
         System.out.println("File delle prenotazioni ripristinato.");
-        ois.close();
     }
 
     public static ArrayList<Tesserati> elencoTesserati(String filename) throws IOException {
@@ -129,11 +127,8 @@ public class ProgettoEsame {
         ArrayList<Campi_da_gioco> campi = elencoCampi(campiDisponibili);
         ArrayList<String> orari = elencoOrari(orariDisponibili);
 
-        try{
-            RipristinaPrenotazioni(filePrenotazioni);
-        }catch (IOException | ClassNotFoundException e) {
-            prenotazioni = new ArrayList<>();
-        }
+        RipristinaPrenotazioni(filePrenotazioni);
+        prenotazioni = new ArrayList<>();
         System.out.println("Elenco tesserati: ");
         for (Tesserati t : tesserati) {
             System.out.println(t);
@@ -155,8 +150,8 @@ public class ProgettoEsame {
             System.out.println("2-Cancella una prenotazione");
             System.out.println("3-Verifica la disponibilita' di un campo");
             System.out.println("4-Diventa un tesserato");
-            System.out.println("5-Modifica una prenotazione");
-            System.out.println("6-Visualizza la tua prenotazione");
+            System.out.println("5-Visualizza una prenotazione");
+            System.out.println("6-Modifica la tua prenotazione");
 
 
             n=scanner.nextInt();
@@ -213,10 +208,12 @@ public class ProgettoEsame {
                     }
                     else{
                         prenotazioni.remove(daRimuovere);
-                        salvaPrenotazioni(prenotazioni,filePrenotazioni);
+                        //salvaPrenotazioni(prenotazioni,filePrenotazioni);
                         System.out.println("Prenotazione cancellata.");
                     }
                     break;
+                case 3:
+
 
                 case 4:
                     System.out.println("Inserisci il tuo nome: ");
@@ -233,20 +230,94 @@ public class ProgettoEsame {
                     }
                     break;
 
-                case 6:
-                    System.out.println("Inserire l'ID della propria prenotazione per poterla visualizzare: ");
-                    int ID = scanner.nextInt();
-                    boolean presente = false;
+                case 5:
+                    System.out.println("Inserisci l'ID della tua prenotazione: ");
+                    int cod = scanner.nextInt();
+                    boolean esiste = false;
                     for (Prenotazioni p : prenotazioni) {
-                        if(p.getId()==ID){
-                            presente = true;
+                        if(p.getId()==cod){
+                            esiste = true;
                             System.out.println(p);
                         }
                     }
-                    if(!presente){
-                        System.out.println("La prenotazione richiesta non e' presente.");
+                    if(!esiste){
+                        System.out.println("Prenotazione inesistente.");
                     }
                     break;
+
+                case 6:
+                    System.out.println("Inserire l'ID della propria prenotazione per poterla visualizzare: ");
+                    int ID = scanner.nextInt();
+                    Prenotazioni modifica = null;
+                    for (Prenotazioni p : prenotazioni) {
+                        if(p.getId()==ID){
+                            modifica = p;
+                            System.out.println(p);
+                            break;
+                        }
+                    }
+                    if(modifica!=null) {
+                        boolean continua = true;
+                        while (continua) {
+                            System.out.println("Quale parte della prenotazione vuoi modificare?");
+                            System.out.println("1. Data");
+                            System.out.println("2. Orario");
+                            System.out.println("3. Campo");
+                            System.out.println("4. Numero di tesserati");
+                            int scelta = scanner.nextInt();
+                            switch (scelta) {
+                                case 1:
+                                    System.out.println("Inserisci la nuova data(dd/MM/yyyy): ");
+                                    data = scanner.next();
+                                    userDate = LocalDate.parse(data, formatter);
+                                    java.sql.Date date = java.sql.Date.valueOf(userDate);
+                                    modifica.setData(date);
+                                    break;
+                                case 2:
+                                    System.out.println("Inserisci il nuovo orario(HH:mm): ");
+                                    orario = scanner.next();
+                                    userTime = LocalTime.parse(orario, formatter2);
+                                    modifica.setInizio(userTime.getHour());
+                                    break;
+                                case 3:
+                                    System.out.println("Inserisci il nuovo codice del campo: ");
+                                    codice = scanner.next();
+                                    campo = getCampi(codice, campi);
+                                    if (campo != null) {
+                                        modifica.setCampo(campo);
+                                    } else System.out.println("Il codice inserito è inesistente.");
+                                    break;
+                                case 4:
+                                    System.out.println("Inserire il nuovo numero di tesserati: ");
+                                    tesseratiNumero = scanner.nextInt();
+                                    List<String> nuovaListaTesserati = new ArrayList<>();
+                                    for (int i = 0; i < tesseratiNumero; i++) {
+                                        System.out.println("Inserire il codice del tesserato: ");
+                                        codiceTesserato = scanner.next();
+                                        Tesserati tesserato = getTesserati(codiceTesserato, tesserati);
+                                        if (tesserato == null) {
+                                            System.out.println("Codice tesserato inesistente.");
+                                        } else {
+                                            nuovaListaTesserati.add(codiceTesserato);
+                                        }
+                                    }
+                                    modifica.setTesserati(nuovaListaTesserati);
+                                    modifica.setPrezzo(tesseratiNumero * 10);
+                                    break;
+                                default:
+                                    System.out.println("Scelta non valida.");
+                                    break;
+                            }
+                            System.out.println("Vuoi modificare qualcos'altro?(si/no)");
+                            String risposta = scanner.next();
+                            if (!risposta.equals("si")) continua = false;
+                        }
+                        System.out.println("Prenotazione modificata con successo.");
+                    }else System.out.println("Prenotazione inesistente.");
+                    break;
+
+
+
 
 
 
@@ -262,7 +333,6 @@ public class ProgettoEsame {
 
                 default:
                     System.out.println("Termina il programma.");
-                    RipristinaPrenotazioni(filePrenotazioni);
                     exit(-1);
                     break;
 
