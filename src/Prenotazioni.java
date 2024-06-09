@@ -75,8 +75,8 @@ public class Prenotazioni implements Serializable/*, Iterable<Tesserati>*/ {
     }
 
     public String toString() {
+        // il formatter serve a rendere più leggibile la data inserita
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        DateTimeFormatter dtf2 = DateTimeFormatter.ofPattern("HH:mm");
         LocalDateTime date = new java.sql.Timestamp((data.getTime())).toLocalDateTime();
         String dataFormat = date.format(dtf);
         String inizioFormat = String.format("%02d:00",inizio);

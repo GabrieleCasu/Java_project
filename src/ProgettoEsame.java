@@ -19,6 +19,7 @@ public class ProgettoEsame {
     static ArrayList<Prenotazioni> prenotazioni;
     static ArrayList<String> orari;
 
+//funzione per salvare le prenotazioni su file
     public static void salvaPrenotazioni(ArrayList<Prenotazioni> prenotazioni,String filename) throws IOException {
         FileOutputStream fos = new FileOutputStream(filename);
         ObjectOutputStream oos = new ObjectOutputStream(fos);
@@ -26,12 +27,12 @@ public class ProgettoEsame {
         oos.close();
         fos.close();
     }
-
+//funzione per ripristinare il file delle prenotazioni(viene utilizzato ogni volta che si 'runna' il programma)
     public static void RipristinaPrenotazioni(String filename) throws IOException, ClassNotFoundException {
         new FileOutputStream(filename).close();
         System.out.println("File delle prenotazioni ripristinato.");
     }
-
+//funzione per stampare i tesserati
     public static ArrayList<Tesserati> elencoTesserati(String filename) throws IOException {
         ArrayList<Tesserati> tesserati = new ArrayList<>();
         FileReader fr = new FileReader(filename);
@@ -46,7 +47,7 @@ public class ProgettoEsame {
         return tesserati;
 
     }
-
+//funzione per stampare i campi da gioco
     public static ArrayList<Campi_da_gioco> elencoCampi(String filename) throws IOException {
         ArrayList<Campi_da_gioco> campi = new ArrayList<>();
         FileReader fr = new FileReader(filename);
@@ -54,13 +55,13 @@ public class ProgettoEsame {
         String line;
         while ((line=br.readLine())!=null){
             String[] f = line.split(" ");
-            campi.add(new Campi_da_gioco(f[0],f[1]));
+            campi.add(new Campi_da_gioco(f[0],f[1],Integer.parseInt(f[2])));
         }
         br.close();
         fr.close();
         return campi;
     }
-
+//funzione per stampare gli orari in cui è possibile prenotarsi
     public static ArrayList<String> elencoOrari(String filename) throws IOException {
         ArrayList<String> orari = new ArrayList<>();
         FileReader fr = new FileReader(filename);
@@ -73,27 +74,29 @@ public class ProgettoEsame {
         fr.close();
         return orari;
     }
-
+//funzione per poter chiamare il tesserato grazie al proprio codice
     public static Tesserati getTesserati(String codice, ArrayList<Tesserati> tesserati) {
         for (Tesserati t : tesserati) {
             if(t.getCodiceTesserato().equals(codice)) return t;
         }
         return null;
     }
-
+//funzione per poter chiamare il campo grazie al proprio codice
     public static Campi_da_gioco getCampi(String codice, ArrayList<Campi_da_gioco> campi) {
         for (Campi_da_gioco t : campi) {
             if(t.getCodiceCampo().equals(codice)) return t;
         }
         return null;
     }
-
+//funzione per generare il codice di un tesserato in modo che esso sia composto dalle sue iniziali di nome e cognome e 3 numeri
     public static String generaCodiceTesserato(String nome,String cognome,ArrayList<Tesserati> tesserati) {
         String iniziali = (nome.substring(0, 1) + cognome.substring(0,1)).toUpperCase();
         int nuovo = 1;
         if(!tesserati.isEmpty()){
+            //recupero il codice dell'ultimo tesserato
             String last = tesserati.get(tesserati.size()-1).getCodiceTesserato();
             int num = Integer.parseInt(last.substring(2));
+            //il codice dev'essere quello dell'ultimo tesserato + 1
             nuovo = num + 1;
         }
         return String.format("%s%03d",iniziali,nuovo);
@@ -121,6 +124,7 @@ public class ProgettoEsame {
     }*/
 
     public static void main(String[] args) throws IOException, ClassNotFoundException {
+        //metodi per rendere più leggibile data e ora dopo l'inserimento dell'utente
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         DateTimeFormatter formatter2 = DateTimeFormatter.ofPattern("HH:mm");
         ArrayList<Tesserati> tesserati = elencoTesserati(nomeFileTesserati);
@@ -165,15 +169,35 @@ public class ProgettoEsame {
                     LocalTime userTime = LocalTime.parse(orario,formatter2);
                     LocalDateTime userDateTime = LocalDateTime.of(userDate,userTime);
                     System.out.println("Data e ora inserite: "+userDateTime);
+                    boolean orarioValido = false;
+                    //verifica che l'orario scelto sia presente in quelli riportati nel file
+                    for(String s: orari){
+                        String[] split = s.split(":");
+                        if(split[0].equals(orario)){
+                            orarioValido = true;
+                            break;
+                        }
+                    }
+                    if(!orarioValido){
+                        System.out.println("Orario non valido. Si prega di scegliere un orario compreso tra le 8:00 e le 21:00.");
+                        break;
+                    }
                     System.out.println("Inserire il codice del campo:  ");
                     String codice = scanner.next();
                     Campi_da_gioco campo = getCampi(codice, campi);
+
                     if(campo==null){
                         System.out.println("Codice campo inesistente.");
                         break;
                     }
+                    //verifica che il numero di tesserati non sia superiore alla capienza del campo
+                    int tesseratiNumero;
+                    while(true){
                     System.out.println("Inserire il numero di tesserati(il prezzo è di 10$ a persona): ");
-                    int tesseratiNumero = scanner.nextInt();
+                    tesseratiNumero = scanner.nextInt();
+                    if(tesseratiNumero>campo.getMaxGiocatori()){
+                        System.out.println("Troppi giocatori per il campo inserito. Inserire un numero adeguato di giocatori.");
+                    }else break;}
                     double prezzo = 10;
                     List<String> tesseratiLista = new ArrayList<>();
                     for (int i = 0; i < tesseratiNumero; i++) {
@@ -185,12 +209,14 @@ public class ProgettoEsame {
                         }
                         else tesseratiLista.add(codiceTesserato);
                     }
-                    prezzo = prezzo*tesseratiNumero;
-                    Prenotazioni prenotazione = new Prenotazioni(java.sql.Timestamp.valueOf(userDateTime),userTime.getHour(),prezzo,campo,tesseratiLista);
-                    prenotazioni.add(prenotazione);
-                    System.out.println("Prenotazione effettuata con successo! Di seguito avrete la stampa della prenotazione," +
-                            " se per qualsiasi ragione volete cancellare o modificare la prenotazione avvisateci per tempo.\n"+prenotazione);
-                    salvaPrenotazioni(prenotazioni,filePrenotazioni);
+                    if(campo.prenotazioniGiocatori(data,orario,tesseratiNumero)) {
+                        prezzo = prezzo * tesseratiNumero;
+                        Prenotazioni prenotazione = new Prenotazioni(java.sql.Timestamp.valueOf(userDateTime), userTime.getHour(), prezzo, campo, tesseratiLista);
+                        prenotazioni.add(prenotazione);
+                        System.out.println("Prenotazione effettuata con successo! Di seguito avrete la stampa della prenotazione," +
+                                " se per qualsiasi ragione volete cancellare o modificare la prenotazione avvisateci per tempo.\n" + prenotazione);
+                        salvaPrenotazioni(prenotazioni, filePrenotazioni);
+                    }else System.out.println("Ci dispiace ma il campo selezionato in data: "+userDate+" alle: " +userTime+ " risulta occupato, scegliere un'altra/o ora/giorno/campo.");
                     break;
 
                 case 2:
@@ -213,6 +239,7 @@ public class ProgettoEsame {
                     }
                     break;
                 case 3:
+
 
 
                 case 4:
