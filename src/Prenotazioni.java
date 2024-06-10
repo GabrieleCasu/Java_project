@@ -3,6 +3,7 @@
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.LocalTime;
 import java.util.Date;
 import java.util.List;
 
@@ -11,7 +12,7 @@ public class Prenotazioni implements Serializable/*, Iterable<Tesserati>*/ {
 
     private int id;
     private Date data;
-    private int inizio;
+    private String inizio;
     private double prezzo;
     private Campi_da_gioco campo;
     private List<String> tesserati;
@@ -24,7 +25,7 @@ public class Prenotazioni implements Serializable/*, Iterable<Tesserati>*/ {
         return data;
     }
 
-    public int getInizio() {
+    public String getInizio() {
         return inizio;
     }
 
@@ -48,7 +49,7 @@ public class Prenotazioni implements Serializable/*, Iterable<Tesserati>*/ {
         this.data = data;
     }
 
-    public void setInizio(int inizio) {
+    public void setInizio(String inizio) {
         this.inizio = inizio;
     }
 
@@ -64,7 +65,7 @@ public class Prenotazioni implements Serializable/*, Iterable<Tesserati>*/ {
         this.prezzo = prezzo;
     }
 
-    public Prenotazioni(Date data,int inizio, double prezzo, Campi_da_gioco campo, List<String> tesserati ) {
+    public Prenotazioni(Date data,String inizio, double prezzo, Campi_da_gioco campo, List<String> tesserati ) {
         this.id = contaID++;
         this.data = data;
         this.inizio = inizio;
@@ -78,10 +79,17 @@ public class Prenotazioni implements Serializable/*, Iterable<Tesserati>*/ {
         // il formatter serve a rendere più leggibile la data inserita
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         LocalDateTime date = new java.sql.Timestamp((data.getTime())).toLocalDateTime();
-        String dataFormat = date.format(dtf);
-        String inizioFormat = String.format("%02d:00",inizio);
-        String fineFormat = String.format("%02d:00",inizio+1);
+        /*String dataFormat = date.format(dtf);
+        String inizioFormat = String.format("%s:00",inizio);
+        String fineFormat = String.format("%s:00",inizio+1);
         return "ID: "+id+"\nPrenotazione per il giorno: "+dataFormat+" dalle ore "+inizioFormat+":00 alle ore "+(fineFormat)+":00\nCampo: "+campo+"\nPrezzo: "+prezzo+"$\nTesserati: "+tesserati+"\n";
+    */
+        String dataFormat = date.format(dtf);
+        LocalTime inizioOrario = LocalTime.parse(inizio, DateTimeFormatter.ofPattern("HH:mm"));
+        LocalTime fineOrario = inizioOrario.plusHours(1);
+        String inizioFormat = inizioOrario.format(DateTimeFormatter.ofPattern("HH:mm"));
+        String fineFormat = fineOrario.format(DateTimeFormatter.ofPattern("HH:mm"));
+        return "ID: " + id + "\nPrenotazione per il giorno: " + dataFormat + " dalle ore " + inizioFormat + ":00 alle ore " + fineFormat + ":00\nCampo: " + campo + "\nPrezzo: " + prezzo + "$\nTesserati: " + tesserati;
     }
 
 

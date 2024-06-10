@@ -3,9 +3,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
+import java.util.*;
 
 import static java.lang.System.exit;
 
@@ -101,27 +99,7 @@ public class ProgettoEsame {
         }
         return String.format("%s%03d",iniziali,nuovo);
     }
-    /*
-    public static ArrayList<Prenotazioni> elencoPrenotazioni(String filename) throws IOException {
-        ArrayList<Prenotazioni> prenotazioni = new ArrayList<>();
-        FileReader fr = new FileReader(filename);
-        BufferedReader br = new BufferedReader(fr);
-        String line;
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-        while ((line=br.readLine())!=null){
-            String[] f = line.split(" ");
-            String[] tesseratiString = line.substring(11).split(", ");
-            List<String> tesserati = new ArrayList<>();
-            double prezzo = Double.parseDouble(line.substring(8));
-            for (String t : tesseratiString) {
-                tesserati.add(t);
-            }
-            prenotazioni.add(new Prenotazioni(f[0],prezzo,f[2],f[3],tesserati));
-        }
-        br.close();
-        fr.close();
-        return prenotazioni;
-    }*/
+
 
     public static void main(String[] args) throws IOException, ClassNotFoundException {
         //metodi per rendere più leggibile data e ora dopo l'inserimento dell'utente
@@ -169,16 +147,9 @@ public class ProgettoEsame {
                     LocalTime userTime = LocalTime.parse(orario,formatter2);
                     LocalDateTime userDateTime = LocalDateTime.of(userDate,userTime);
                     System.out.println("Data e ora inserite: "+userDateTime);
-                    boolean orarioValido = false;
-                    //verifica che l'orario scelto sia presente in quelli riportati nel file
-                    for(String s: orari){
-                        String[] split = s.split(":");
-                        if(split[0].equals(orario)){
-                            orarioValido = true;
-                            break;
-                        }
-                    }
-                    if(!orarioValido){
+                    LocalTime apertura = LocalTime.of(8,0);
+                    LocalTime chiusura = LocalTime.of(22,0);
+                    if(userTime.isBefore(apertura) && userTime.isAfter(chiusura)){
                         System.out.println("Orario non valido. Si prega di scegliere un orario compreso tra le 8:00 e le 21:00.");
                         break;
                     }
@@ -209,9 +180,11 @@ public class ProgettoEsame {
                         }
                         else tesseratiLista.add(codiceTesserato);
                     }
-                    if(campo.prenotazioniGiocatori(data,orario,tesseratiNumero)) {
+
+                    if(campo.getPrenotazioni(userDate,userTime) + tesseratiNumero <= campo.getMaxGiocatori()) {
+                        campo.aggiungiPrenotazione(userDate,userTime,tesseratiNumero);
                         prezzo = prezzo * tesseratiNumero;
-                        Prenotazioni prenotazione = new Prenotazioni(java.sql.Timestamp.valueOf(userDateTime), userTime.getHour(), prezzo, campo, tesseratiLista);
+                        Prenotazioni prenotazione = new Prenotazioni(java.sql.Timestamp.valueOf(userDateTime), orario, prezzo, campo, tesseratiLista);
                         prenotazioni.add(prenotazione);
                         System.out.println("Prenotazione effettuata con successo! Di seguito avrete la stampa della prenotazione," +
                                 " se per qualsiasi ragione volete cancellare o modificare la prenotazione avvisateci per tempo.\n" + prenotazione);
@@ -239,6 +212,39 @@ public class ProgettoEsame {
                     }
                     break;
                 case 3:
+                    System.out.println("Inserire il codice del campo del quale vuole sapere la disponibilita':  ");
+                    String codiceQual = scanner.next();
+                    Campi_da_gioco info = null;
+                    for (Campi_da_gioco p: campi){
+                        if(Objects.equals(codiceQual, p.getCodiceCampo())){
+                            info=p;
+                            break;
+                        }
+                    }
+                    if(info==null){
+                        System.out.println("Codice campo inesistente.");
+                    }
+                    else{
+                        System.out.println("Quale data le interessa?");
+                        String dataQual = scanner.next();
+                        LocalDate date = LocalDate.parse(dataQual,formatter);
+                        System.out.println("In data: "+date+" la disponibilita' e' la seguente: ");
+                        Set<LocalTime> orariPrenotati = info.getPrenotazioni(date);
+                        if(orariPrenotati.isEmpty()) System.out.println("Il campo e' disponibile per tutti gli orari.");
+                        else{
+                        for(LocalTime o: orariPrenotati){
+                            int numeroGiocatori = info.getPrenotazioni(date,o);
+                            if(numeroGiocatori >= info.getMaxGiocatori()) System.out.println("Orario: "+o.format(formatter2)+" Prenotato ("+numeroGiocatori+" persone presenti)");
+                            else System.out.println("Orario: "+o.format(formatter2)+" Disponibile");
+                        }
+                           /* if(info.disponibilita(date,o)){
+                                System.out.println("Orario: "+o+" Disponibile("+" capienza massima: "+info.getMaxGiocatori()+")");
+                            }
+                            else System.out.println("Orario: "+o+" Prenotato(capienza massima raggiunta)");*/
+                        }
+                    }
+                    break;
+
 
 
 
@@ -304,7 +310,7 @@ public class ProgettoEsame {
                                     System.out.println("Inserisci il nuovo orario(HH:mm): ");
                                     orario = scanner.next();
                                     userTime = LocalTime.parse(orario, formatter2);
-                                    modifica.setInizio(userTime.getHour());
+                                    modifica.setInizio(String.valueOf(userTime.getHour()));
                                     break;
                                 case 3:
                                     System.out.println("Inserisci il nuovo codice del campo: ");
