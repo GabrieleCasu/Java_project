@@ -12,10 +12,8 @@ public class ProgettoEsame {
     static String campiDisponibili = "C:\\Users\\lekse\\IdeaProjects\\ProgettoPerEsame\\Campi_da_gioco";
     static String orariDisponibili = "C:\\Users\\lekse\\IdeaProjects\\ProgettoPerEsame\\Orari_Prenotazioni";
     static String filePrenotazioni = "C:\\Users\\lekse\\IdeaProjects\\ProgettoPerEsame\\src\\Prenotazioni";
-    static ArrayList<Tesserati> tesserati;
-    static ArrayList<Campi_da_gioco> campi;
     static ArrayList<Prenotazioni> prenotazioni;
-    static ArrayList<String> orari;
+
 
 //funzione per salvare le prenotazioni su file
     public static void salvaPrenotazioni(ArrayList<Prenotazioni> prenotazioni,String filename) throws IOException {
@@ -26,7 +24,7 @@ public class ProgettoEsame {
         fos.close();
     }
 //funzione per ripristinare il file delle prenotazioni(viene utilizzato ogni volta che si 'runna' il programma)
-    public static void RipristinaPrenotazioni(String filename) throws IOException, ClassNotFoundException {
+    public static void RipristinaPrenotazioni(String filename) throws IOException {
         new FileOutputStream(filename).close();
         System.out.println("File delle prenotazioni ripristinato.");
     }
@@ -88,11 +86,11 @@ public class ProgettoEsame {
     }
 //funzione per generare il codice di un tesserato in modo che esso sia composto dalle sue iniziali di nome e cognome e 3 numeri
     public static String generaCodiceTesserato(String nome,String cognome,ArrayList<Tesserati> tesserati) {
-        String iniziali = (nome.substring(0, 1) + cognome.substring(0,1)).toUpperCase();
+        String iniziali = (nome.charAt(0) + cognome.substring(0,1)).toUpperCase();
         int nuovo = 1;
         if(!tesserati.isEmpty()){
             //recupero il codice dell'ultimo tesserato
-            String last = tesserati.get(tesserati.size()-1).getCodiceTesserato();
+            String last = tesserati.getLast().getCodiceTesserato();
             int num = Integer.parseInt(last.substring(2));
             //il codice dev'essere quello dell'ultimo tesserato + 1
             nuovo = num + 1;
@@ -101,7 +99,7 @@ public class ProgettoEsame {
     }
 
 
-    public static void main(String[] args) throws IOException, ClassNotFoundException {
+    public static void main(String[] args) throws IOException {
         //metodi per rendere più leggibile data e ora dopo l'inserimento dell'utente
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         DateTimeFormatter formatter2 = DateTimeFormatter.ofPattern("HH:mm");
@@ -134,6 +132,7 @@ public class ProgettoEsame {
             System.out.println("4-Diventa un tesserato");
             System.out.println("5-Visualizza una prenotazione");
             System.out.println("6-Modifica la tua prenotazione");
+            System.out.println("7-Annulla l'abbonamento a tesserato");
 
 
             n=scanner.nextInt();
@@ -142,6 +141,11 @@ public class ProgettoEsame {
                     System.out.println("In quale giorno si vorrebbe prenotare il campo?(inserire una data nel formato dd/MM/yyyy)");
                     String data = scanner.next();
                     LocalDate userDate = LocalDate.parse(data,formatter);
+                    LocalDate oggi = LocalDate.now();
+                    if(userDate.isBefore(oggi)){
+                        System.out.println("Errore: non e' possibile prenotare indietro nel tempo.");
+                        break;
+                    }
                     System.out.println("Data inserita: "+userDate+". Inserire ora l'orario desiderato(formato HH:mm): ");
                     String orario = scanner.next();
                     LocalTime userTime = LocalTime.parse(orario,formatter2);
@@ -171,14 +175,23 @@ public class ProgettoEsame {
                     }else break;}
                     double prezzo = 10;
                     List<String> tesseratiLista = new ArrayList<>();
+                    boolean inesistente = false;
                     for (int i = 0; i < tesseratiNumero; i++) {
                         System.out.println("Inserire il codice del tesserato: ");
                         String codiceTesserato = scanner.next();
                         Tesserati tesserato = getTesserati(codiceTesserato, tesserati);
                         if(tesserato==null){
                             System.out.println("Codice tesserato inesistente.");
+                            inesistente = true;
+                            break;
                         }
                         else tesseratiLista.add(codiceTesserato);
+
+                    }
+
+                    if(inesistente){
+                        System.out.println("Prenotazione annullata.");
+                        break;
                     }
 
                     if(campo.getPrenotazioni(userDate,userTime) + tesseratiNumero <= campo.getMaxGiocatori()) {
@@ -234,13 +247,10 @@ public class ProgettoEsame {
                         else{
                         for(LocalTime o: orariPrenotati){
                             int numeroGiocatori = info.getPrenotazioni(date,o);
-                            if(numeroGiocatori >= info.getMaxGiocatori()) System.out.println("Orario: "+o.format(formatter2)+" Prenotato ("+numeroGiocatori+" persone presenti)");
-                            else System.out.println("Orario: "+o.format(formatter2)+" Disponibile");
+                            if(numeroGiocatori <= info.getMaxGiocatori()) System.out.println("Orario: "+o.format(formatter2)+" Prenotato ("+numeroGiocatori+" persona/e presente/i)");
+                            else if(numeroGiocatori==0) System.out.println("Orario: "+o.format(formatter2)+" Disponibile");
                         }
-                           /* if(info.disponibilita(date,o)){
-                                System.out.println("Orario: "+o+" Disponibile("+" capienza massima: "+info.getMaxGiocatori()+")");
-                            }
-                            else System.out.println("Orario: "+o+" Prenotato(capienza massima raggiunta)");*/
+
                         }
                     }
                     break;
@@ -347,6 +357,17 @@ public class ProgettoEsame {
                         }
                         System.out.println("Prenotazione modificata con successo.");
                     }else System.out.println("Prenotazione inesistente.");
+                    break;
+
+                case 7:
+                    System.out.println("Riportare il proprio codice tesserato: ");
+                    String codiceDaButtare = scanner.next();
+                    Tesserati tesserato = getTesserati(codiceDaButtare, tesserati);
+                    if(tesserato==null){
+                        System.out.println("Codice tesserato inesistente.");
+                    }
+                    else tesserati.remove(tesserato);
+                    System.out.println("Abbonamento annullato correttamente.");
                     break;
 
 

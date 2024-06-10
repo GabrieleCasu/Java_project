@@ -42,35 +42,6 @@ public class Campi_da_gioco implements Serializable {
         return 0;
     }
 
-
-    /*public boolean prenotazioniGiocatori(String data,String orario,int numGiocatori) {
-        //se data non è presente nella mappa le viene associata un valore nullo nella Hashmap, se esiste non fa nulla
-        //questo perchè anche se non è presente deve avere un valore nullo, non può essere vuoto
-        prenotazioni.putIfAbsent(data, new HashMap<>());
-        Map<String,Integer> map = prenotazioni.get(data);
-        if(!map.containsKey(orario)) {
-            map.put(orario,numGiocatori);
-            return true;
-        }
-        else{
-        int prenotati = map.get(orario);
-        if(prenotati+numGiocatori <= getMaxGiocatori()){
-            map.put(orario,prenotati+numGiocatori);
-            return true;
-        }
-        else return false;
-    }}*/
-
-   /* public boolean disponibilita(String data, String orario) {
-        if(!prenotazioni.containsKey(data)) return true;
-        Map<String,Integer> map = prenotazioni.get(data);
-        return !map.containsKey(orario) || map.get(orario) < getMaxGiocatori();
-    }*/
-
-   /* public Map<String,Integer> getPrenotazioni() {
-        return prenotazioni;
-    }*/
-
     public Campi_da_gioco(String codice, String tipo, int maxGiocatori) {
         this.codiceCampo = codice;
         this.tipologiaCampo = tipo;
