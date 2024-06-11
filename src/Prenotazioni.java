@@ -42,6 +42,7 @@ public class Prenotazioni implements Serializable/*, Iterable<Tesserati>*/ {
     }
 
     public void setId(int id) {
+        //l'ID si deve aggiornare a ogni prenotazione
         this.id = contaID++;
     }
 
@@ -79,11 +80,6 @@ public class Prenotazioni implements Serializable/*, Iterable<Tesserati>*/ {
         // il formatter serve a rendere più leggibile la data inserita
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         LocalDateTime date = new java.sql.Timestamp((data.getTime())).toLocalDateTime();
-        /*String dataFormat = date.format(dtf);
-        String inizioFormat = String.format("%s:00",inizio);
-        String fineFormat = String.format("%s:00",inizio+1);
-        return "ID: "+id+"\nPrenotazione per il giorno: "+dataFormat+" dalle ore "+inizioFormat+":00 alle ore "+(fineFormat)+":00\nCampo: "+campo+"\nPrezzo: "+prezzo+"$\nTesserati: "+tesserati+"\n";
-    */
         String dataFormat = date.format(dtf);
         LocalTime inizioOrario = LocalTime.parse(inizio, DateTimeFormatter.ofPattern("HH:mm"));
         LocalTime fineOrario = inizioOrario.plusHours(1);

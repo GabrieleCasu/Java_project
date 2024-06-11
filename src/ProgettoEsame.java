@@ -8,6 +8,7 @@ import java.util.*;
 import static java.lang.System.exit;
 
 public class ProgettoEsame {
+    //caricamento delle informazioni da file
     static String nomeFileTesserati = "C:\\Users\\lekse\\IdeaProjects\\ProgettoPerEsame\\Tesserati";
     static String campiDisponibili = "C:\\Users\\lekse\\IdeaProjects\\ProgettoPerEsame\\Campi_da_gioco";
     static String orariDisponibili = "C:\\Users\\lekse\\IdeaProjects\\ProgettoPerEsame\\Orari_Prenotazioni";
@@ -86,6 +87,7 @@ public class ProgettoEsame {
     }
 //funzione per generare il codice di un tesserato in modo che esso sia composto dalle sue iniziali di nome e cognome e 3 numeri
     public static String generaCodiceTesserato(String nome,String cognome,ArrayList<Tesserati> tesserati) {
+        //recupera la prima lettera di nome e cognome
         String iniziali = (nome.charAt(0) + cognome.substring(0,1)).toUpperCase();
         int nuovo = 1;
         if(!tesserati.isEmpty()){
@@ -95,6 +97,7 @@ public class ProgettoEsame {
             //il codice dev'essere quello dell'ultimo tesserato + 1
             nuovo = num + 1;
         }
+        //il formato da restituire prevede la stringa e 3 numeri
         return String.format("%s%03d",iniziali,nuovo);
     }
 
@@ -106,7 +109,7 @@ public class ProgettoEsame {
         ArrayList<Tesserati> tesserati = elencoTesserati(nomeFileTesserati);
         ArrayList<Campi_da_gioco> campi = elencoCampi(campiDisponibili);
         ArrayList<String> orari = elencoOrari(orariDisponibili);
-
+        //ogni volta che il programma viene "runnato", il file delle prenotazioni viene resettato
         RipristinaPrenotazioni(filePrenotazioni);
         prenotazioni = new ArrayList<>();
         System.out.println("Elenco tesserati: ");
@@ -142,6 +145,7 @@ public class ProgettoEsame {
                     String data = scanner.next();
                     LocalDate userDate = LocalDate.parse(data,formatter);
                     LocalDate oggi = LocalDate.now();
+                    //controllo per evitare si possa prenotare in una data precedente a quella odierna
                     if(userDate.isBefore(oggi)){
                         System.out.println("Errore: non e' possibile prenotare indietro nel tempo.");
                         break;
@@ -151,8 +155,10 @@ public class ProgettoEsame {
                     LocalTime userTime = LocalTime.parse(orario,formatter2);
                     LocalDateTime userDateTime = LocalDateTime.of(userDate,userTime);
                     System.out.println("Data e ora inserite: "+userDateTime);
+                    //orari prestabiliti nel file Orari_Prenotazioni
                     LocalTime apertura = LocalTime.of(8,0);
                     LocalTime chiusura = LocalTime.of(22,0);
+                    //verifica che l'orario richiesto rispetti quelli del campo
                     if(userTime.isBefore(apertura) && userTime.isAfter(chiusura)){
                         System.out.println("Orario non valido. Si prega di scegliere un orario compreso tra le 8:00 e le 21:00.");
                         break;
@@ -160,7 +166,7 @@ public class ProgettoEsame {
                     System.out.println("Inserire il codice del campo:  ");
                     String codice = scanner.next();
                     Campi_da_gioco campo = getCampi(codice, campi);
-
+                    //verifica dell'esistenza del campo
                     if(campo==null){
                         System.out.println("Codice campo inesistente.");
                         break;
@@ -170,6 +176,7 @@ public class ProgettoEsame {
                     while(true){
                     System.out.println("Inserire il numero di tesserati(il prezzo è di 10$ a persona): ");
                     tesseratiNumero = scanner.nextInt();
+                    //verifica che non vengano inseriti una quantità di peersone superiore alla capienza del campo
                     if(tesseratiNumero>campo.getMaxGiocatori()){
                         System.out.println("Troppi giocatori per il campo inserito. Inserire un numero adeguato di giocatori.");
                     }else break;}
@@ -180,20 +187,22 @@ public class ProgettoEsame {
                         System.out.println("Inserire il codice del tesserato: ");
                         String codiceTesserato = scanner.next();
                         Tesserati tesserato = getTesserati(codiceTesserato, tesserati);
+                        //verifica dell'esistenza del tesserato
                         if(tesserato==null){
                             System.out.println("Codice tesserato inesistente.");
                             inesistente = true;
                             break;
                         }
+                        //se esiste viene aggiunto alla lista
                         else tesseratiLista.add(codiceTesserato);
 
                     }
-
+                    //se non esiste la prenotazione si ferma
                     if(inesistente){
                         System.out.println("Prenotazione annullata.");
                         break;
                     }
-
+                    //se tutti i controlli sono stati superati la prenotazione viene aggiunta e salvata
                     if(campo.getPrenotazioni(userDate,userTime) + tesseratiNumero <= campo.getMaxGiocatori()) {
                         campo.aggiungiPrenotazione(userDate,userTime,tesseratiNumero);
                         prezzo = prezzo * tesseratiNumero;
@@ -220,7 +229,7 @@ public class ProgettoEsame {
                     }
                     else{
                         prenotazioni.remove(daRimuovere);
-                        //salvaPrenotazioni(prenotazioni,filePrenotazioni);
+                        salvaPrenotazioni(prenotazioni,filePrenotazioni);
                         System.out.println("Prenotazione cancellata.");
                     }
                     break;
@@ -243,13 +252,17 @@ public class ProgettoEsame {
                         LocalDate date = LocalDate.parse(dataQual,formatter);
                         System.out.println("In data: "+date+" la disponibilita' e' la seguente: ");
                         Set<LocalTime> orariPrenotati = info.getPrenotazioni(date);
-                        if(orariPrenotati.isEmpty()) System.out.println("Il campo e' disponibile per tutti gli orari.");
+                        if(orariPrenotati.isEmpty()){
+                            System.out.println("Il campo e' disponibile per tutti gli orari.");
+                            break;
+                        }
                         else{
                         for(LocalTime o: orariPrenotati){
                             int numeroGiocatori = info.getPrenotazioni(date,o);
-                            if(numeroGiocatori <= info.getMaxGiocatori()) System.out.println("Orario: "+o.format(formatter2)+" Prenotato ("+numeroGiocatori+" persona/e presente/i)");
-                            else if(numeroGiocatori==0) System.out.println("Orario: "+o.format(formatter2)+" Disponibile");
+                            System.out.println("Orario: "+o.format(formatter2)+" Prenotato ("+numeroGiocatori+"/"+info.getMaxGiocatori()+" persona/e presente/i)");
+
                         }
+                        System.out.println("Tutti gli altri orari sono disponibili.");
 
                         }
                     }
