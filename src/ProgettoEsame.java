@@ -2,6 +2,7 @@ import java.io.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -136,6 +137,7 @@ public class ProgettoEsame {
             System.out.println("5-Visualizza una prenotazione");
             System.out.println("6-Modifica la tua prenotazione");
             System.out.println("7-Annulla l'abbonamento a tesserato");
+            System.out.println("0-Inserire qualsiasi altro numero per terminare il programma.");
 
 
             n=scanner.nextInt();
@@ -199,6 +201,25 @@ public class ProgettoEsame {
                     }
                     //se non esiste la prenotazione si ferma
                     if(inesistente){
+                        System.out.println("Prenotazione annullata.");
+                        break;
+                    }
+                    //controllo per evitare che un tesserato possa prenotarsi contemporanemanete a due campi diversi(o allo stesso campo)
+                    boolean conflitto = false;
+                    for(Prenotazioni p: prenotazioni){
+                        // conversione a LocalDateTime per poter utilizzare equals
+                        LocalDateTime pren = p.getData().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+                        if(pren.equals(userDateTime)){
+                            for (String codiceTesserato : tesseratiLista){
+                                if(p.getTesserati().contains(codiceTesserato)){
+                                    System.out.println("Errore: il tesserato con codice "+codiceTesserato+" ha gia' una prenotazione nello stesso orario.");
+                                    conflitto = true;
+                                    break;
+                                }
+                            }
+                        }
+                        }
+                    if(conflitto){
                         System.out.println("Prenotazione annullata.");
                         break;
                     }
@@ -382,21 +403,6 @@ public class ProgettoEsame {
                     else tesserati.remove(tesserato);
                     System.out.println("Abbonamento annullato correttamente.");
                     break;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
                 default:
                     System.out.println("Termina il programma.");
