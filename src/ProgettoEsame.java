@@ -129,6 +129,7 @@ public class ProgettoEsame {
         Scanner scanner = new Scanner(System.in);
         int n;
         while(true){
+        //l'idea è gestire le scelte come se fosse un utente che accede al sito del campo sportivo
             System.out.println("Benvenuto al campo sportivo CUS SASSARI! Selezionare un numero corrispondente alla propria richiesta.");
             System.out.println("1-Effettua una prenotazione");
             System.out.println("2-Cancella una prenotazione");
@@ -137,8 +138,8 @@ public class ProgettoEsame {
             System.out.println("5-Visualizza una prenotazione");
             System.out.println("6-Modifica la tua prenotazione");
             System.out.println("7-Annulla l'abbonamento a tesserato");
-            System.out.println("0-Inserire qualsiasi altro numero per terminare il programma.");
-
+            System.out.println("8-Verifica la disponibilita' del centro sportivo a un determinato orario.");
+            System.out.println("0-Inserire qualsiasi altro numero per uscire.");
 
             n=scanner.nextInt();
             switch(n){
@@ -403,6 +404,36 @@ public class ProgettoEsame {
                     else tesserati.remove(tesserato);
                     System.out.println("Abbonamento annullato correttamente.");
                     break;
+
+                case 8:
+                    System.out.println("Inserisci la data (dd/MM/yyyy): ");
+                    data = scanner.next();
+                    userDate = LocalDate.parse(data, formatter);
+                    System.out.println("Inserisci l'orario (HH:mm): ");
+                    orario = scanner.next();
+                    userTime = LocalTime.parse(orario, formatter2);
+                    System.out.println("Verifica della disponibilita' per il centro sportivo in data: "+userDate+" alle ore: "+userTime);
+                    boolean disponibilita = true;
+                    //controllo i campi e recupero le prenotazioni con il Set per non avere duplicati
+                    for(Campi_da_gioco camp : campi){
+                        Set<LocalTime> prenotazioni = camp.getPrenotazioni(userDate);
+                    //se la prenotazione contiene l'orario richiesto vuol dire che qualcuno lo ha gia' prenotato
+                        if(prenotazioni.contains(userTime)){
+                            disponibilita = false;
+                            //recupero il numero di giocatori del campo e confronto quel numero con la sua capienza massima
+                            int numGiocatori = camp.getPrenotazioni(userDate,userTime);
+                            if(numGiocatori==camp.getMaxGiocatori()){
+                                System.out.println("Il campo "+camp.getTipologiaCampo()+ " (codice: "+camp.getCodiceCampo()+") risulta pieno.");
+                            }
+                            else System.out.println("Il campo "+camp.getTipologiaCampo()+" (codice: "+camp.getCodiceCampo()+ ") e' stato prenotato ma ci sono ancora posti disponibili: "+numGiocatori+"/"+camp.getMaxGiocatori()+".");
+                        }else System.out.println("Il campo "+camp.getTipologiaCampo()+" (codice: "+camp.getCodiceCampo()+ ") e' disponibile a quest'ora.");
+                    }
+                    if(disponibilita){
+                        System.out.println("Tutti i campi sono disponibili in data: "+userDate+" alle ore: "+userTime);
+                    }
+                    break;
+
+
 
                 default:
                     System.out.println("Termina il programma.");
