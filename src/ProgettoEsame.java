@@ -162,7 +162,7 @@ public class ProgettoEsame {
                     LocalTime apertura = LocalTime.of(8,0);
                     LocalTime chiusura = LocalTime.of(22,0);
                     //verifica che l'orario richiesto rispetti quelli del campo
-                    if(userTime.isBefore(apertura) && userTime.isAfter(chiusura)){
+                    if(userTime.isBefore(apertura) || userTime.isAfter(chiusura)){
                         System.out.println("Orario non valido. Si prega di scegliere un orario compreso tra le 8:00 e le 21:00.");
                         break;
                     }
@@ -210,8 +210,10 @@ public class ProgettoEsame {
                     for(Prenotazioni p: prenotazioni){
                         // conversione a LocalDateTime per poter utilizzare equals
                         LocalDateTime pren = p.getData().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+                        //verifico che data e ora siano uguali
                         if(pren.equals(userDateTime)){
                             for (String codiceTesserato : tesseratiLista){
+                                //verifico che i codici corrispondano
                                 if(p.getTesserati().contains(codiceTesserato)){
                                     System.out.println("Errore: il tesserato con codice "+codiceTesserato+" ha gia' una prenotazione nello stesso orario.");
                                     conflitto = true;
@@ -366,7 +368,7 @@ public class ProgettoEsame {
                                         System.out.println("Tutti i campi sono chiusi alle ore: " + userTime);
                                         break;
                                     }
-                                    modifica.setInizio(String.valueOf(userTime.getHour()));
+                                    modifica.setInizio(userTime.format(formatter2));
                                     break;
                                 case 3:
                                     System.out.println("Inserisci il nuovo codice del campo: ");
