@@ -397,6 +397,26 @@ public class ProgettoEsame {
                                             nuovaListaTesserati.add(codiceTesserato);
                                         }
                                     }
+                                    boolean coincidenza = false;
+                                    LocalDateTime userDataOra = LocalDateTime.of(localDate, LocalTime.parse(modifica.getInizio()));
+                                    for (Prenotazioni p : prenotazioni) {
+                                        LocalDateTime pren = p.getData().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+                                        if (pren.equals(userDataOra) && p.getId() != modifica.getId()) {
+                                            for (String codTesserato : nuovaListaTesserati) {
+                                                if (p.getTesserati().contains(codTesserato)) {
+                                                    System.out.println("Errore: il tesserato con codice " + codTesserato + " ha già una prenotazione nello stesso orario.");
+                                                    coincidenza = true;
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    }
+
+                                    if (coincidenza) {
+                                        System.out.println("Modifica annullata.");
+                                        break;
+                                    }
+
                                     modifica.setTesserati(nuovaListaTesserati);
                                     modifica.setPrezzo(tesseratiNumero * 10);
                                     break;
@@ -409,6 +429,8 @@ public class ProgettoEsame {
                             if (!risposta.equals("si")) continua = false;
                         }
                         System.out.println("Prenotazione modificata con successo.");
+                        System.out.println(modifica);
+                        salvaPrenotazioni(prenotazioni,filePrenotazioni);
                     }else System.out.println("Prenotazione inesistente.");
                     break;
 
