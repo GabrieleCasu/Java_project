@@ -348,6 +348,11 @@ public class ProgettoEsame {
                                     System.out.println("Inserisci la nuova data(dd/MM/yyyy): ");
                                     data = scanner.next();
                                     userDate = LocalDate.parse(data, formatter);
+                                    LocalDate Oggi = LocalDate.now();
+                                    if(userDate.isBefore(Oggi)){
+                                        System.out.println("Errore: non e' possibile prenotare indietro nel tempo.");
+                                        break;
+                                    }
                                     java.sql.Date date = java.sql.Date.valueOf(userDate);
                                     modifica.setData(date);
                                     break;
@@ -355,6 +360,12 @@ public class ProgettoEsame {
                                     System.out.println("Inserisci il nuovo orario(HH:mm): ");
                                     orario = scanner.next();
                                     userTime = LocalTime.parse(orario, formatter2);
+                                    LocalTime startTime = LocalTime.of(8, 0);
+                                    LocalTime endTime = LocalTime.of(22, 0);
+                                    if (userTime.isBefore(startTime) || userTime.isAfter(endTime)) {
+                                        System.out.println("Tutti i campi sono chiusi alle ore: " + userTime);
+                                        break;
+                                    }
                                     modifica.setInizio(String.valueOf(userTime.getHour()));
                                     break;
                                 case 3:
@@ -368,6 +379,13 @@ public class ProgettoEsame {
                                 case 4:
                                     System.out.println("Inserire il nuovo numero di tesserati: ");
                                     tesseratiNumero = scanner.nextInt();
+                                    Campi_da_gioco campoCorrente = modifica.getCampo();
+                                    LocalDate localDate = modifica.getData().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                                    int numTesseratiCorrente = campoCorrente.getPrenotazioni(localDate,LocalTime.parse(modifica.getInizio()));
+                                    if(tesseratiNumero + numTesseratiCorrente -modifica.getTesserati().size() > campoCorrente.getMaxGiocatori()){
+                                        System.out.println("Errore: numero di tesserati troppo elevato per il campetto scelto.");
+                                        break;
+                                    }
                                     List<String> nuovaListaTesserati = new ArrayList<>();
                                     for (int i = 0; i < tesseratiNumero; i++) {
                                         System.out.println("Inserire il codice del tesserato: ");
@@ -409,9 +427,20 @@ public class ProgettoEsame {
                     System.out.println("Inserisci la data (dd/MM/yyyy): ");
                     data = scanner.next();
                     userDate = LocalDate.parse(data, formatter);
+                    LocalDate today = LocalDate.now();
+                    if(userDate.isBefore(today)){
+                        System.out.println("Errore: non e' possibile prenotare indietro nel tempo.");
+                        break;
+                    }
                     System.out.println("Inserisci l'orario (HH:mm): ");
                     orario = scanner.next();
                     userTime = LocalTime.parse(orario, formatter2);
+                    LocalTime startTime = LocalTime.of(8, 0);
+                    LocalTime endTime = LocalTime.of(22, 0);
+                    if (userTime.isBefore(startTime) || userTime.isAfter(endTime)) {
+                        System.out.println("Tutti i campi sono chiusi in data: " + userDate + " alle ore: " + userTime);
+                        break;
+                    }
                     System.out.println("Verifica della disponibilita' per il centro sportivo in data: "+userDate+" alle ore: "+userTime);
                     boolean disponibilita = true;
                     //controllo i campi e recupero le prenotazioni con il Set per non avere duplicati
