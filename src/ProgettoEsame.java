@@ -16,6 +16,7 @@ public class ProgettoEsame {
     static String filePrenotazioni = "C:\\Users\\lekse\\IdeaProjects\\ProgettoPerEsame\\src\\Prenotazioni";
     static ArrayList<Prenotazioni> prenotazioni;
     static Scanner scanner = new Scanner(System.in);
+    //i formatter servono a rendere più leggibile data e ora
     static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
     static DateTimeFormatter formatter2 = DateTimeFormatter.ofPattern("HH:mm");
 
@@ -36,7 +37,7 @@ public class ProgettoEsame {
         System.out.println("File delle prenotazioni ripristinato.");
     }
 
-//funzione per stampare i tesserati
+//funzione per caricare i tesserati
     public static ArrayList<Tesserati> elencoTesserati(String filename) throws IOException {
         ArrayList<Tesserati> tesserati = new ArrayList<>();
         FileReader fr = new FileReader(filename);
@@ -51,7 +52,7 @@ public class ProgettoEsame {
         return tesserati;
 
     }
-//funzione per stampare i campi da gioco
+//funzione per caricare i campi da gioco
     public static ArrayList<Campi_da_gioco> elencoCampi(String filename) throws IOException {
         ArrayList<Campi_da_gioco> campi = new ArrayList<>();
         FileReader fr = new FileReader(filename);
@@ -65,7 +66,7 @@ public class ProgettoEsame {
         fr.close();
         return campi;
     }
-//funzione per stampare gli orari in cui è possibile prenotarsi
+//funzione per caricare gli orari in cui è possibile prenotarsi
     public static ArrayList<String> elencoOrari(String filename) throws IOException {
         ArrayList<String> orari = new ArrayList<>();
         FileReader fr = new FileReader(filename);
@@ -108,14 +109,14 @@ public class ProgettoEsame {
         //il formato da restituire prevede la stringa e 3 numeri
         return String.format(iniziali+"0"+nuovo);
     }
-
+//funzione per poter stampare i vari elenchi, il ? è utilizzato per non dover specificare il tipo della lista
     public static void stampaListe(String elenco,List<?>lista){
         System.out.println(elenco);
         for (Object o : lista) {
             System.out.println(o);
         }
     }
-
+//funzione utilizzata ogni volta che viene inserita una stringa per controllare sia scritta correttamente
     public static String getStringInput(String input){
         while(true) {
             try{
@@ -126,7 +127,7 @@ public class ProgettoEsame {
             scanner.next();
         }}
     }
-
+//come getStringInput ma per gli interi
     public static int getIntInput(String input){
         while(true){
             try{
@@ -138,19 +139,20 @@ public class ProgettoEsame {
             }
         }
     }
-
+//per le date
     public static LocalDate getDateInput(String input){
         while(true){
             try{
                 System.out.println(input);
                 String data = scanner.next();
+                //restituisce la data formattata
                 return LocalDate.parse(data,formatter);
             }catch(Exception e){
                 System.out.println("Data non valida. Riprova.");
             }
         }
     }
-
+//per gli orari
     public static LocalTime getTimeInput(String input){
         while(true){
             try{
@@ -162,23 +164,22 @@ public class ProgettoEsame {
             }
         }
     }
-
+//funzione per effettuare le prenotazioni(caso 1)
     public static void effettuaPrenotazione(ArrayList<Tesserati> tesserati, ArrayList<Campi_da_gioco> campi) throws IOException {
         LocalDate userDate = getDateInput("In quale giorno si vorrebbe prenotare il campo? (formato dd/MM/yyyy)");
         LocalDate oggi = LocalDate.now();
+        //controllo per evitare venga inserita una data precedente a quella odierna
         if (userDate.isBefore(oggi)) {
             System.out.println("Errore: non e' possibile prenotare indietro nel tempo.");
             getDateInput("In quale giorno si vorrebbe prenotare il campo? (formato dd/MM/yyyy)");
         }
-
         LocalTime userTime = getTimeInput("Inserire ora l'orario desiderato (formato HH:mm): ");
-
+        //controllo per evitare che venga inserito un orario in cui il campo è chiuso
         if (userTime.isBefore(LocalTime.of(8, 0)) || userTime.isAfter(LocalTime.of(22, 0))) {
             getTimeInput("Orario non valido. Si prega di scegliere un orario compreso tra le 8:00 e le 21:00.");
         }
         LocalDateTime userDateTime = LocalDateTime.of(userDate, userTime);
         System.out.println("Data e ora inserite: " + userDateTime);
-
         String codice = getStringInput("Inserire il codice del campo: ");
         Campi_da_gioco campo = getCampi(codice, campi);
         if (campo == null) {
@@ -191,7 +192,6 @@ public class ProgettoEsame {
                 System.out.println("Troppi giocatori per il campo inserito. Inserire un numero adeguato di giocatori.");
                 getIntInput("Inserire il numero di tesserati (il prezzo è di 10$ a persona): ");
             }
-
             List<String> tesseratiLista = new ArrayList<>();
             for (int i = 0; i < tesseratiNumero; i++) {
                 String codiceTesserato = getStringInput("Inserire il codice del tesserato: ");
@@ -202,9 +202,10 @@ public class ProgettoEsame {
                 }
                 tesseratiLista.add(codiceTesserato);
             }
-
+        //controllo per evitare prenotazioni in contemporanea da parte dello stesso utente
         boolean conflitto = false;
         for (Prenotazioni p : prenotazioni) {
+            //serie di riferimenti per poter convertire il tipo Date a LocalDateTime
             LocalDateTime pren = p.getData().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
             if (pren.equals(userDateTime)) {
                 for (String codiceTesserato : tesseratiLista) {
@@ -220,10 +221,10 @@ public class ProgettoEsame {
         if (conflitto) {
             return;
         }
-
         if (campo.getPrenotazioni(userDate, userTime) + tesseratiNumero <= campo.getMaxGiocatori()) {
             campo.aggiungiPrenotazione(userDate, userTime, tesseratiNumero);
             double prezzo = 10 * tesseratiNumero;
+            //il primo parametro è un tipo LocalDateTime convertito a un tipo Date
             Prenotazioni prenotazione = new Prenotazioni(java.sql.Timestamp.valueOf(userDateTime), userTime.format(formatter2), prezzo, campo, tesseratiLista);
             prenotazioni.add(prenotazione);
             System.out.println("Prenotazione effettuata con successo! Di seguito avrete la stampa della prenotazione, " +
@@ -233,7 +234,7 @@ public class ProgettoEsame {
             System.out.println("Ci dispiace ma il campo selezionato in data: " + userDate + " alle: " + userTime + " risulta occupato, scegliere un'altra/o ora/giorno/campo.");
         }
     }}
-
+//funzione per cancellare le prenotazioni(caso 2)
     public static void cancellaPrenotazione() throws IOException {
         int id = getIntInput("Inserire l'ID della prenotazione da cancellare: ");
         Prenotazioni daRimuovere = null;
@@ -251,7 +252,7 @@ public class ProgettoEsame {
             System.out.println("Prenotazione con ID " + id + " non trovata.");
         }
     }
-
+//funzione per la verifica della disponibilità di un campo(caso 3)
     public static void verificaDisponibilitaCampo(ArrayList<Campi_da_gioco> campi){
         String codiceQual = getStringInput("Inserire il codice del campo del quale vuole sapere la disponibilita':  ");
         Campi_da_gioco info = null;
@@ -280,9 +281,10 @@ public class ProgettoEsame {
             }
         }
     }
-
+//funzione per diventare tesserati(caso 4)
     public static void diventaTesserato(ArrayList<Tesserati> tesserati){
         String nome = getStringInput("Inserirci il tuo nome: ");
+        //metodo per mettere in maiuscolo le prime lettere di nome e cognome
         nome = nome.substring(0,1).toUpperCase() + nome.substring(1);
         String cognome = getStringInput("Inserisci il tuo cognome: ");
         cognome = cognome.substring(0,1).toUpperCase() + cognome.substring(1);
@@ -295,6 +297,7 @@ public class ProgettoEsame {
             System.out.println(p);
         }
     }
+//funzione per visualizzare una prenotazione(caso 5)
     public static void visualizzaPrenotazione() {
         int id = getIntInput("Inserire l'ID della prenotazione da visualizzare: ");
         for (Prenotazioni p : prenotazioni) {
@@ -305,7 +308,7 @@ public class ProgettoEsame {
         }
         System.out.println("Prenotazione con ID " + id + " non trovata.");
     }
-
+// funzione per modificare una prenotazione
     public static void modificaPrenotazioni(ArrayList<Prenotazioni> prenotazioni,ArrayList<Campi_da_gioco> campi,ArrayList<Tesserati> tesserati, String filePrenotazioni) throws IOException {
         int ID = getIntInput("Inserire l'ID della prenotazione da visualizzare: ");
         Prenotazioni modifica = null;
@@ -359,6 +362,8 @@ public class ProgettoEsame {
                         Campi_da_gioco campoCorrente = modifica.getCampo();
                         LocalDate localDate = modifica.getData().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
                         int numTesseratiCorrente = campoCorrente.getPrenotazioni(localDate,LocalTime.parse(modifica.getInizio()));
+                        //dopo aver recuperato la quantità di persone già presenti nel campo, verifico che con la modifica venga comunque
+                        //rispettata la capienza massima
                         if(tesseratiNumero + numTesseratiCorrente -modifica.getTesserati().size() > campoCorrente.getMaxGiocatori()){
                             System.out.println("Errore: numero di tesserati troppo elevato per il campetto scelto.");
                             tesseratiNumero = getIntInput("Inserire il nuovo numero di tesserati: ");
@@ -388,12 +393,10 @@ public class ProgettoEsame {
                                 }
                             }
                         }
-
                         if (coincidenza) {
                             System.out.println("Modifica annullata.");
                             break;
                         }
-
                         modifica.setTesserati(nuovaListaTesserati);
                         modifica.setPrezzo(tesseratiNumero * 10);
                         break;
@@ -409,7 +412,8 @@ public class ProgettoEsame {
             salvaPrenotazioni(prenotazioni,filePrenotazioni);
         }else System.out.println("Prenotazione inesistente.");
     }
-
+//funzione per eliminare un tesserato(caso 7)
+    //con esso vengono cancellate anche le sue prenotazioni
     public static void annullaAbbonamento(ArrayList<Tesserati> tesserati) throws IOException {
         String codice = getStringInput("Inserire il codice del tesserato da annullare: ");
         Tesserati tesserato = getTesserati(codice, tesserati);
@@ -429,8 +433,8 @@ public class ProgettoEsame {
             System.out.println("Codice tesserato inesistente.");
         }
     }
-
-    public static void verificaDisponibiltaOrario(List<Campi_da_gioco> campi){
+//funzione per verificare la disponibilità dei campi in base a un orario
+    public static void verificaDisponibilitaOrario(List<Campi_da_gioco> campi){
         LocalDate userDate = getDateInput("Quale data le interessa?");
         LocalDate today = LocalDate.now();
         if(userDate.isBefore(today)){
@@ -469,7 +473,7 @@ public class ProgettoEsame {
         ArrayList<Tesserati> tesserati = elencoTesserati(nomeFileTesserati);
         ArrayList<Campi_da_gioco> campi = elencoCampi(campiDisponibili);
         ArrayList<String> orari = elencoOrari(orariDisponibili);
-        //ogni volta che il programma viene "runnato", il file delle prenotazioni e dei tesserati viene resettato
+        //ogni volta che il programma viene "runnato", il file delle prenotazioni viene resettato
         RipristinaPrenotazioni(filePrenotazioni);
         prenotazioni = new ArrayList<>();
         stampaListe("Elenco tesserati: ",tesserati);
@@ -513,7 +517,7 @@ public class ProgettoEsame {
                     annullaAbbonamento(tesserati);
                     break;
                 case 8:
-                    verificaDisponibiltaOrario(campi);
+                    verificaDisponibilitaOrario(campi);
                     break;
                 default:
                     System.out.println("Termina il programma.");
