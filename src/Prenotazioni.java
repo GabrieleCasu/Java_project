@@ -1,17 +1,17 @@
 //created by Gabriele Casu
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.LocalTime;
-import java.util.Date;
 import java.util.List;
 
 public class Prenotazioni implements Serializable/*, Iterable<Tesserati>*/ {
     private static int contaID = 1;
 
     private final int id;
-    private Date data;
+    private LocalDate data;
     private String inizio;
     private double prezzo;
     private Campi_da_gioco campo;
@@ -21,7 +21,7 @@ public class Prenotazioni implements Serializable/*, Iterable<Tesserati>*/ {
         return id;
     }
 
-    public Date getData() {
+    public LocalDate getData() {
         return data;
     }
 
@@ -40,7 +40,7 @@ public class Prenotazioni implements Serializable/*, Iterable<Tesserati>*/ {
 
 
 
-    public void setData(Date data) {
+    public void setData(LocalDate data) {
         this.data = data;
     }
 
@@ -60,7 +60,7 @@ public class Prenotazioni implements Serializable/*, Iterable<Tesserati>*/ {
         this.prezzo = prezzo;
     }
 
-    public Prenotazioni(Date data,String inizio, double prezzo, Campi_da_gioco campo, List<String> tesserati ) {
+    public Prenotazioni(LocalDate data, String inizio, double prezzo, Campi_da_gioco campo, List<String> tesserati ) {
         //l'ID si deve aggiornare a ogni prenotazione
         this.id = contaID++;
         this.data = data;
@@ -74,7 +74,7 @@ public class Prenotazioni implements Serializable/*, Iterable<Tesserati>*/ {
     public String toString() {
         // il formatter serve a rendere più leggibile la data inserita
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        LocalDateTime date = new java.sql.Timestamp((data.getTime())).toLocalDateTime();
+        LocalDateTime date = data.atStartOfDay();
         String dataFormat = date.format(dtf);
         LocalTime inizioOrario = LocalTime.parse(inizio, DateTimeFormatter.ofPattern("HH:mm"));
         LocalTime fineOrario = inizioOrario.plusHours(1);

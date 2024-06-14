@@ -3,7 +3,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.sql.Date;
-import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
@@ -207,7 +206,7 @@ public class ProgettoEsame {
         boolean conflitto = false;
         for (Prenotazioni p : prenotazioni) {
             //serie di riferimenti per poter convertire il tipo Date a LocalDateTime
-            LocalDateTime pren = p.getData().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+            LocalDateTime pren = p.getData().atStartOfDay();
             if (pren.equals(userDateTime)) {
                 for (String codiceTesserato : tesseratiLista) {
                     if (p.getTesserati().contains(codiceTesserato)) {
@@ -226,7 +225,7 @@ public class ProgettoEsame {
             campo.aggiungiPrenotazione(userDate, userTime, tesseratiNumero);
             double prezzo = 10 * tesseratiNumero;
             //il primo parametro è un tipo LocalDateTime convertito a un tipo Date
-            Prenotazioni prenotazione = new Prenotazioni(java.sql.Timestamp.valueOf(userDateTime), userTime.format(formatter2), prezzo, campo, tesseratiLista);
+            Prenotazioni prenotazione = new Prenotazioni(userDate, userTime.format(formatter2), prezzo, campo, tesseratiLista);
             prenotazioni.add(prenotazione);
             System.out.println("Prenotazione effettuata con successo! Di seguito avrete la stampa della prenotazione, " +
                     "se per qualsiasi ragione volete cancellare o modificare la prenotazione avvisateci per tempo.\n" + prenotazione);
@@ -338,7 +337,7 @@ public class ProgettoEsame {
                             getDateInput("Inserisci la nuova data(dd/MM/yyyy): ");
                         }
                         //senza java.sql non posso utilizzare valueOf, specifico di quella classe
-                        modifica.setData(Date.valueOf(userDate));
+                        modifica.setData(Date.valueOf(userDate).toLocalDate());
                         break;
                     case 2:
                         LocalTime userTime = getTimeInput("Inserisci il nuovo orario(HH:mm): ");
@@ -360,13 +359,12 @@ public class ProgettoEsame {
                     case 4:
                         int tesseratiNumero = getIntInput("Inserire il nuovo numero di tesserati: ");
                         Campi_da_gioco campoCorrente = modifica.getCampo();
-                        LocalDate localDate = modifica.getData().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+                        LocalDate localDate = modifica.getData();
                         int numTesseratiCorrente = campoCorrente.getPrenotazioni(localDate,LocalTime.parse(modifica.getInizio()));
                         //dopo aver recuperato la quantità di persone già presenti nel campo, verifico che con la modifica venga comunque
                         //rispettata la capienza massima
                         if(tesseratiNumero + numTesseratiCorrente > campoCorrente.getMaxGiocatori() || tesseratiNumero<0){
                             System.out.println("Errore: numero di tesserati troppo elevato per il campetto scelto.");
-                            getIntInput("Inserire il nuovo numero di tesserati: ");
                         }
                         else{
                             modificaTesserati(modifica,tesserati,tesseratiNumero);
@@ -405,9 +403,9 @@ public class ProgettoEsame {
     }
 //funzione per evitare che un tesserato possa prenotarsi contemporaneamente in due campi diversi o nello stesso
     private static boolean verificaConflitti(ArrayList<Prenotazioni> prenotazioni,Prenotazioni modifica,List<String> nuovaListaTesserati){
-        LocalDateTime userDataOra = LocalDateTime.of(modifica.getData().toInstant().atZone(ZoneId.systemDefault()).toLocalDate(), LocalTime.parse(modifica.getInizio(),formatter2));
+        LocalDateTime userDataOra = LocalDateTime.of(modifica.getData(), LocalTime.parse(modifica.getInizio(),formatter2));
         for (Prenotazioni p : prenotazioni) {
-            LocalDateTime pren = p.getData().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+            LocalDateTime pren = p.getData().atStartOfDay();
             if (pren.equals(userDataOra) && p.getId() != modifica.getId()) {
                 for (String codTesserato : nuovaListaTesserati) {
                     if (p.getTesserati().contains(codTesserato)) {
