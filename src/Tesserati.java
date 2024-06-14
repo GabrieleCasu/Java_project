@@ -7,14 +7,6 @@ public class Tesserati implements Serializable ,Comparable<Tesserati>{
     private final String cognomeTesserato;
     private final String codiceTesserato;
 
-    public String getNomeTesserato() {
-        return nomeTesserato;
-    }
-
-    public String getCognomeTesserato() {
-        return cognomeTesserato;
-    }
-
     public String getCodiceTesserato() {
         return codiceTesserato;
     }

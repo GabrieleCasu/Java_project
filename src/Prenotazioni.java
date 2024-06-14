@@ -10,7 +10,7 @@ import java.util.List;
 public class Prenotazioni implements Serializable/*, Iterable<Tesserati>*/ {
     private static int contaID = 1;
 
-    private int id;
+    private final int id;
     private Date data;
     private String inizio;
     private double prezzo;
@@ -29,10 +29,6 @@ public class Prenotazioni implements Serializable/*, Iterable<Tesserati>*/ {
         return inizio;
     }
 
-    public double getPrezzo() {
-        return prezzo;
-    }
-
     public Campi_da_gioco getCampo() {
         return campo;
     }
@@ -41,10 +37,8 @@ public class Prenotazioni implements Serializable/*, Iterable<Tesserati>*/ {
         return tesserati;
     }
 
-    public void setId(int id) {
-        //l'ID si deve aggiornare a ogni prenotazione
-        this.id = contaID++;
-    }
+
+
 
     public void setData(Date data) {
         this.data = data;
@@ -67,6 +61,7 @@ public class Prenotazioni implements Serializable/*, Iterable<Tesserati>*/ {
     }
 
     public Prenotazioni(Date data,String inizio, double prezzo, Campi_da_gioco campo, List<String> tesserati ) {
+        //l'ID si deve aggiornare a ogni prenotazione
         this.id = contaID++;
         this.data = data;
         this.inizio = inizio;

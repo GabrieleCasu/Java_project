@@ -2,6 +2,7 @@ import java.io.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.sql.Date;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -337,8 +338,7 @@ public class ProgettoEsame {
                             getDateInput("Inserisci la nuova data(dd/MM/yyyy): ");
                         }
                         //senza java.sql non posso utilizzare valueOf, specifico di quella classe
-                        Date date = java.sql.Date.valueOf(userDate);
-                        modifica.setData(date);
+                        modifica.setData(Date.valueOf(userDate));
                         break;
                     case 2:
                         LocalTime userTime = getTimeInput("Inserisci il nuovo orario(HH:mm): ");
@@ -364,41 +364,16 @@ public class ProgettoEsame {
                         int numTesseratiCorrente = campoCorrente.getPrenotazioni(localDate,LocalTime.parse(modifica.getInizio()));
                         //dopo aver recuperato la quantità di persone già presenti nel campo, verifico che con la modifica venga comunque
                         //rispettata la capienza massima
-                        if(tesseratiNumero + numTesseratiCorrente -modifica.getTesserati().size() > campoCorrente.getMaxGiocatori()){
+                        if(tesseratiNumero + numTesseratiCorrente > campoCorrente.getMaxGiocatori() || tesseratiNumero<0){
                             System.out.println("Errore: numero di tesserati troppo elevato per il campetto scelto.");
-                            tesseratiNumero = getIntInput("Inserire il nuovo numero di tesserati: ");
+                            getIntInput("Inserire il nuovo numero di tesserati: ");
                         }
-                        List<String> nuovaListaTesserati = new ArrayList<>();
-                        for (int i = 0; i < tesseratiNumero; i++) {
-                            String codiceTesserato = getStringInput("Inserire il codice del tesserato: ");
-                            Tesserati tesserato = getTesserati(codiceTesserato, tesserati);
-                            if (tesserato == null) {
-                                System.out.println("Codice tesserato inesistente.");
-                                getStringInput("Inserire il codice del tesserato: ");
-                            } else {
-                                nuovaListaTesserati.add(codiceTesserato);
+                        else{
+                            modificaTesserati(modifica,tesserati,tesseratiNumero);
+                            if(verificaConflitti(prenotazioni,modifica,modifica.getTesserati())){
+                                modificaTesserati(modifica,tesserati,modifica.getTesserati().size());
                             }
                         }
-                        boolean coincidenza = false;
-                        LocalDateTime userDataOra = LocalDateTime.of(localDate, LocalTime.parse(modifica.getInizio()));
-                        for (Prenotazioni p : prenotazioni) {
-                            LocalDateTime pren = p.getData().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-                            if (pren.equals(userDataOra) && p.getId() != modifica.getId()) {
-                                for (String codTesserato : nuovaListaTesserati) {
-                                    if (p.getTesserati().contains(codTesserato)) {
-                                        System.out.println("Errore: il tesserato con codice " + codTesserato + " ha già una prenotazione nello stesso orario.");
-                                        coincidenza = true;
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                        if (coincidenza) {
-                            System.out.println("Modifica annullata.");
-                            break;
-                        }
-                        modifica.setTesserati(nuovaListaTesserati);
-                        modifica.setPrezzo(tesseratiNumero * 10);
                         break;
                     default:
                         System.out.println("Scelta non valida.");
@@ -411,6 +386,38 @@ public class ProgettoEsame {
             System.out.println(modifica);
             salvaPrenotazioni(prenotazioni,filePrenotazioni);
         }else System.out.println("Prenotazione inesistente.");
+    }
+//funzione per la modifica dei tesserati
+    private static void modificaTesserati(Prenotazioni modifica, ArrayList<Tesserati> tesserati, int tesseratiNumero){
+        List<String> nuovaListaTesserati = new ArrayList<>();
+        for (int i = 0; i < tesseratiNumero; i++) {
+            String codiceTesserato = getStringInput("Inserire il codice del tesserato: ");
+            Tesserati tesserato = getTesserati(codiceTesserato, tesserati);
+            if (tesserato == null) {
+                System.out.println("Codice tesserato inesistente.");
+                getStringInput("Inserire il codice del tesserato: ");
+            } else {
+                nuovaListaTesserati.add(codiceTesserato);
+            }
+        }
+        modifica.setTesserati(nuovaListaTesserati);
+        modifica.setPrezzo(tesseratiNumero * 10);
+    }
+//funzione per evitare che un tesserato possa prenotarsi contemporaneamente in due campi diversi o nello stesso
+    private static boolean verificaConflitti(ArrayList<Prenotazioni> prenotazioni,Prenotazioni modifica,List<String> nuovaListaTesserati){
+        LocalDateTime userDataOra = LocalDateTime.of(modifica.getData().toInstant().atZone(ZoneId.systemDefault()).toLocalDate(), LocalTime.parse(modifica.getInizio(),formatter2));
+        for (Prenotazioni p : prenotazioni) {
+            LocalDateTime pren = p.getData().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+            if (pren.equals(userDataOra) && p.getId() != modifica.getId()) {
+                for (String codTesserato : nuovaListaTesserati) {
+                    if (p.getTesserati().contains(codTesserato)) {
+                        System.out.println("Errore: il tesserato con codice " + codTesserato + " ha già una prenotazione nello stesso orario.");
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 //funzione per eliminare un tesserato(caso 7)
     //con esso vengono cancellate anche le sue prenotazioni
