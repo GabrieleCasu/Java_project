@@ -169,36 +169,39 @@ public class ProgettoEsame {
         LocalDate userDate = getDateInput("In quale giorno si vorrebbe prenotare il campo? (formato dd/MM/yyyy)");
         LocalDate oggi = LocalDate.now();
         //controllo per evitare venga inserita una data precedente a quella odierna
-        if (userDate.isBefore(oggi)) {
+        while (userDate.isBefore(oggi)) {
             System.out.println("Errore: non e' possibile prenotare indietro nel tempo.");
-            getDateInput("In quale giorno si vorrebbe prenotare il campo? (formato dd/MM/yyyy)");
+            userDate = getDateInput("In quale giorno si vorrebbe prenotare il campo? (formato dd/MM/yyyy)");
         }
         LocalTime userTime = getTimeInput("Inserire ora l'orario desiderato (formato HH:mm): ");
         //controllo per evitare che venga inserito un orario in cui il campo è chiuso
-        if (userTime.isBefore(LocalTime.of(8, 0)) || userTime.isAfter(LocalTime.of(22, 0))) {
-            getTimeInput("Orario non valido. Si prega di scegliere un orario compreso tra le 8:00 e le 21:00.");
+        while (userTime.isBefore(LocalTime.of(8, 0)) || userTime.isAfter(LocalTime.of(22, 0))) {
+            userTime = getTimeInput("Orario non valido. Si prega di scegliere un orario compreso tra le 8:00 e le 21:00.");
         }
         LocalDateTime userDateTime = LocalDateTime.of(userDate, userTime);
         System.out.println("Data e ora inserite: " + userDateTime);
         String codice = getStringInput("Inserire il codice del campo: ");
         Campi_da_gioco campo = getCampi(codice, campi);
-        if (campo == null) {
+        while (campo == null) {
             System.out.println("Codice campo inesistente.");
-            getStringInput("Inserire il codice del campo: ");
+            codice = getStringInput("Inserire il codice del campo: ");
+            campo = getCampi(codice, campi);
         }
-        else {
+
             int tesseratiNumero = getIntInput("Inserire il numero di tesserati (il prezzo è di 10$ a persona): ");
-            if (tesseratiNumero > campo.getMaxGiocatori()) {
+            while (tesseratiNumero > campo.getMaxGiocatori()) {
                 System.out.println("Troppi giocatori per il campo inserito. Inserire un numero adeguato di giocatori.");
-                getIntInput("Inserire il numero di tesserati (il prezzo è di 10$ a persona): ");
+                tesseratiNumero = getIntInput("Inserire il numero di tesserati (il prezzo è di 10$ a persona): ");
             }
+
             List<String> tesseratiLista = new ArrayList<>();
             for (int i = 0; i < tesseratiNumero; i++) {
                 String codiceTesserato = getStringInput("Inserire il codice del tesserato: ");
                 Tesserati tesserato = getTesserati(codiceTesserato, tesserati);
-                if (tesserato == null) {
+                while (tesserato == null) {
                     System.out.println("Codice tesserato inesistente.");
                     codiceTesserato = getStringInput("Inserisci un codice valido: ");
+                    tesserato = getTesserati(codiceTesserato, tesserati);
                 }
                 tesseratiLista.add(codiceTesserato);
             }
@@ -232,7 +235,7 @@ public class ProgettoEsame {
         } else {
             System.out.println("Ci dispiace ma il campo selezionato in data: " + userDate + " alle: " + userTime + " risulta occupato, scegliere un'altra/o ora/giorno/campo.");
         }
-    }}
+    }
 //funzione per cancellare le prenotazioni(caso 2)
     public static void cancellaPrenotazione() throws IOException {
         int id = getIntInput("Inserire l'ID della prenotazione da cancellare: ");
@@ -331,9 +334,9 @@ public class ProgettoEsame {
                     case 1:
                         LocalDate userDate = getDateInput("Inserisci la nuova data(dd/MM/yyyy): ");
                         LocalDate Oggi = LocalDate.now();
-                        if(userDate.isBefore(Oggi)){
+                        while(userDate.isBefore(Oggi)){
                             System.out.println("Errore: non e' possibile prenotare indietro nel tempo.");
-                            getDateInput("Inserisci la nuova data(dd/MM/yyyy): ");
+                            userDate=getDateInput("Inserisci la nuova data(dd/MM/yyyy): ");
                         }
                         //senza java.sql non posso utilizzare valueOf, specifico di quella classe
                         modifica.setData(Date.valueOf(userDate).toLocalDate());
@@ -360,7 +363,7 @@ public class ProgettoEsame {
                         Campi_da_gioco campoCorrente = modifica.getCampo();
                         LocalDate localDate = modifica.getData();
                         int numTesseratiCorrente = campoCorrente.getPrenotazioni(localDate,LocalTime.parse(modifica.getInizio()));
-                        if(tesseratiNumero + numTesseratiCorrente  > campoCorrente.getMaxGiocatori()){
+                        while(tesseratiNumero + numTesseratiCorrente  > campoCorrente.getMaxGiocatori() || tesseratiNumero<=0){
                             System.out.println("Errore: numero di tesserati troppo elevato per il campetto scelto.");
                             tesseratiNumero = getIntInput("Inserire il nuovo numero di tesserati: ");
                         }
@@ -368,12 +371,13 @@ public class ProgettoEsame {
                         for (int i = 0; i < tesseratiNumero; i++) {
                             String codiceTesserato = getStringInput("Inserire il codice del tesserato: ");
                             Tesserati tesserato = getTesserati(codiceTesserato, tesserati);
-                            if (tesserato == null) {
+                            while (tesserato == null) {
                                 System.out.println("Codice tesserato inesistente.");
-                                getStringInput("Inserire il codice del tesserato: ");
-                            } else {
-                                nuovaListaTesserati.add(codiceTesserato);
+                                codiceTesserato=getStringInput("Inserire il codice del tesserato: ");
+                                tesserato = getTesserati(codiceTesserato, tesserati);
                             }
+                                nuovaListaTesserati.add(codiceTesserato);
+
                         }
                         boolean coincidenza = false;
                         LocalDateTime userDataOra = LocalDateTime.of(localDate, LocalTime.parse(modifica.getInizio()));
@@ -435,9 +439,9 @@ public class ProgettoEsame {
     public static void verificaDisponibilitaOrario(List<Campi_da_gioco> campi){
         LocalDate userDate = getDateInput("Quale data le interessa?");
         LocalDate today = LocalDate.now();
-        if(userDate.isBefore(today)){
+        while(userDate.isBefore(today)){
             System.out.println("Errore: non e' possibile prenotare indietro nel tempo.");
-            getDateInput("Quale data le interessa?");
+            userDate=getDateInput("Quale data le interessa?");
         }
         LocalTime userTime = getTimeInput("Inserire ora l'orario desiderato (formato HH:mm): ");
         LocalTime startTime = LocalTime.of(8, 0);
