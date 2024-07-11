@@ -97,17 +97,20 @@ public class ProgettoEsame {
     public static String generaCodiceTesserato(String nome,String cognome,ArrayList<Tesserati> tesserati) {
         //recupera la prima lettera di nome e cognome
         String iniziali = (nome.charAt(0) + cognome.substring(0,1)).toUpperCase();
-        int nuovo = 1;
+        int max = 0;
         if(!tesserati.isEmpty()){
-            //recupero il codice dell'ultimo tesserato
-            String last = tesserati.getLast().getCodiceTesserato();
-            //num sono le ultime 3 cifre, quindi parte dalla terza
-            int num = Integer.parseInt(last.substring(2));
+            for (Tesserati t : tesserati) {
+                String codice = t.getCodiceTesserato();
+                //num sono le ultime 3 cifre, quindi parte dalla terza
+                int num = Integer.parseInt(codice.substring(2));
+                if(num > max) max = num;
+            }
+
             //il codice dev'essere quello dell'ultimo tesserato + 1
-            nuovo = num + 1;
+
         }
         //il formato da restituire prevede la stringa e 3 numeri
-        return String.format(iniziali+"0"+nuovo);
+        return String.format(iniziali+"0"+(max+1));
     }
 //funzione per poter stampare i vari elenchi, il ? è utilizzato per non dover specificare il tipo della lista
     public static void stampaListe(String elenco,List<?>lista){
