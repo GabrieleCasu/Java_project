@@ -14,6 +14,7 @@ public class ProgettoEsame {
     static String campiDisponibili = "C:\\Users\\lekse\\IdeaProjects\\ProgettoPerEsame\\Campi_da_gioco";
     static String orariDisponibili = "C:\\Users\\lekse\\IdeaProjects\\ProgettoPerEsame\\Orari_Prenotazioni";
     static String filePrenotazioni = "C:\\Users\\lekse\\IdeaProjects\\ProgettoPerEsame\\src\\Prenotazioni";
+    static String fileTestuale = "C:\\Users\\lekse\\IdeaProjects\\ProgettoPerEsame\\src\\prenotazioni.txt";
     static ArrayList<Prenotazioni> prenotazioni;
     static Scanner scanner = new Scanner(System.in);
     //i formatter servono a rendere più leggibile data e ora
@@ -35,6 +36,17 @@ public class ProgettoEsame {
     public static void RipristinaPrenotazioni(String filename) throws IOException {
         new FileOutputStream(filename).close();
         System.out.println("File delle prenotazioni ripristinato.");
+    }
+
+    // Funzione per esportare le prenotazioni in un file di testo
+    public static void esportaPrenotazioniTesto(List<Prenotazioni> prenotazioni, String filename) throws IOException {
+        BufferedWriter writer = new BufferedWriter(new FileWriter(filename));
+        for (Prenotazioni prenotazione : prenotazioni) {
+            writer.write(prenotazione.toString());
+            writer.newLine();
+        }
+        writer.newLine();
+        writer.close();
     }
 
 //funzione per caricare i tesserati
@@ -535,6 +547,7 @@ public class ProgettoEsame {
                     break;
                 default:
                     System.out.println("Termina il programma.");
+                    esportaPrenotazioniTesto(prenotazioni,fileTestuale);
                     exit(-1);
                     break;
 
