@@ -270,14 +270,16 @@ public class ProgettoEsame {
         else{
             LocalDate dataQual = getDateInput("Quale data le interessa?");
             System.out.println("In data: " + dataQual + " la disponibilita' e' la seguente: ");
-            //il Set di orari è utilizzato per evitare doppioni, se ci sono 2 prenotazioni per la stessa ora non stamperà due volte quell'ora
+            //il Set di orari è utilizzato per evitare doppioni, se ci sono 2 prenotazioni per la stessa ora
+            // non stamperà due volte quell'ora
             Set<LocalTime> orariPrenotati = info.getPrenotazioni(dataQual);
             if (orariPrenotati.isEmpty()) {
                 System.out.println("Il campo e' disponibile per tutti gli orari.");
             } else {
                 for (LocalTime o : orariPrenotati) {
                     int numeroGiocatori = info.getPrenotazioni(dataQual, o);
-                    System.out.println("Orario: " + o.format(formatter2) + " Prenotato (" + numeroGiocatori + "/" + info.getMaxGiocatori() + " persona/e presente/i)");
+                    System.out.println("Orario: " + o.format(formatter2) + " Prenotato (" + numeroGiocatori +
+                            "/" + info.getMaxGiocatori() + " persona/e presente/i)");
                 }
                 System.out.println("Tutti gli altri orari sono disponibili.");
             }
@@ -295,6 +297,7 @@ public class ProgettoEsame {
         System.out.println(codiceTesserato);
         tesserati.add(new Tesserati(nome,cognome,codiceTesserato));
         System.out.println("Elenco tesserati aggiornato: ");
+        Collections.sort(tesserati);
         for (Tesserati p : tesserati){
             System.out.println(p);
         }
@@ -311,7 +314,8 @@ public class ProgettoEsame {
         System.out.println("Prenotazione con ID " + id + " non trovata.");
     }
 // funzione per modificare una prenotazione
-    public static void modificaPrenotazioni(ArrayList<Prenotazioni> prenotazioni,ArrayList<Campi_da_gioco> campi,ArrayList<Tesserati> tesserati, String filePrenotazioni) throws IOException {
+    public static void modificaPrenotazioni(ArrayList<Prenotazioni> prenotazioni,ArrayList<Campi_da_gioco> campi,
+                                            ArrayList<Tesserati> tesserati, String filePrenotazioni) throws IOException {
         int ID = getIntInput("Inserire l'ID della prenotazione da visualizzare: ");
         Prenotazioni modifica = null;
         for (Prenotazioni p : prenotazioni) {
@@ -386,7 +390,8 @@ public class ProgettoEsame {
                             if (pren.equals(userDataOra) && p.getId() != modifica.getId()) {
                                 for (String codTesserato : nuovaListaTesserati) {
                                     if (p.getTesserati().contains(codTesserato)) {
-                                        System.out.println("Errore: il tesserato con codice " + codTesserato + " ha già una prenotazione nello stesso orario.");
+                                        System.out.println("Errore: il tesserato con codice " + codTesserato +
+                                                " ha già una prenotazione nello stesso orario.");
                                         coincidenza = true;
                                         break;
                                     }
@@ -398,7 +403,6 @@ public class ProgettoEsame {
                             System.out.println("Modifica annullata.");
                             break;
                         }
-
                         modifica.setTesserati(nuovaListaTesserati);
                         modifica.setPrezzo(tesseratiNumero * 10);
                         break;
@@ -461,10 +465,14 @@ public class ProgettoEsame {
                 //recupero il numero di giocatori del campo e confronto quel numero con la sua capienza massima
                 int numGiocatori = camp.getPrenotazioni(userDate,userTime);
                 if(numGiocatori==camp.getMaxGiocatori()){
-                    System.out.println("Il campo "+camp.getTipologiaCampo()+ " (codice: "+camp.getCodiceCampo()+") risulta pieno.");
+                    System.out.println("Il campo "+camp.getTipologiaCampo()+ " (codice: "
+                            +camp.getCodiceCampo()+") risulta pieno.");
                 }
-                else System.out.println("Il campo "+camp.getTipologiaCampo()+" (codice: "+camp.getCodiceCampo()+ ") e' stato prenotato ma ci sono ancora posti disponibili: "+numGiocatori+"/"+camp.getMaxGiocatori()+".");
-            }else System.out.println("Il campo "+camp.getTipologiaCampo()+" (codice: "+camp.getCodiceCampo()+ ") e' disponibile a quest'ora.");
+                else System.out.println("Il campo "+camp.getTipologiaCampo()
+                        +" (codice: "+camp.getCodiceCampo()+ ") e' stato prenotato ma ci sono ancora posti disponibili: "
+                        +numGiocatori+"/"+camp.getMaxGiocatori()+".");
+            }else System.out.println("Il campo "+camp.getTipologiaCampo()
+                    +" (codice: "+camp.getCodiceCampo()+ ") e' disponibile a quest'ora.");
         }
         if(disponibilita){
             System.out.println("Tutti i campi sono disponibili in data: "+userDate+" alle ore: "+userTime);
@@ -478,6 +486,8 @@ public class ProgettoEsame {
         //ogni volta che il programma viene "runnato", il file delle prenotazioni viene resettato
         RipristinaPrenotazioni(filePrenotazioni);
         prenotazioni = new ArrayList<>();
+        //sfrutto la funzione compareTo di Tesserati per ordinare i tesserati per cognome
+        Collections.sort(tesserati);
         stampaListe("Elenco tesserati: ",tesserati);
         stampaListe("Elenco campi disponibili: ",campi);
         stampaListe("Elenco orari disponibili: ",orari);
