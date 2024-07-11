@@ -105,7 +105,6 @@ public class ProgettoEsame {
                 int num = Integer.parseInt(codice.substring(2));
                 if(num > max) max = num;
             }
-
             //il codice dev'essere quello dell'ultimo tesserato + 1
 
         }
